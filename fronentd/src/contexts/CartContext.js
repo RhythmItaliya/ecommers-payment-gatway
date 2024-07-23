@@ -39,11 +39,24 @@ const CartProvider = ({ children }) => {
     const fetchCart = async () => {
       if (customerId) {
         try {
-          const response = await axios.get(`http://localhost:8000/api/cart/get`, {
+          const response = await axios.get('http://localhost:8000/api/cart/get', {
             params: { customer_id: customerId }
           });
-          setCart(response.data.items || []);
-          console.log(response.data.items);
+          const cartItems = response.data.items;
+          const productIds = cartItems.map(item => item.productId);
+          const productDetails = await Promise.all(
+            productIds.map(productId =>
+              axios.get(`https://fakestoreapi.com/products/${productId}`)
+            )
+          );
+          const productsWithAmount = cartItems.map(item => {
+            const product = productDetails.find(p => p.data.id === item.productId);
+            return {
+              ...product.data,
+              amount: item.amount
+            };
+          });
+          setCart(productsWithAmount);
         } catch (e) {
           console.error('Failed to fetch cart:', e);
         }
@@ -51,6 +64,7 @@ const CartProvider = ({ children }) => {
     };
     fetchCart();
   }, [customerId]);
+
 
   useEffect(() => {
     const total = cart.reduce((accumulator, currentItem) => {

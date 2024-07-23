@@ -22,10 +22,6 @@ const CartSchema = new Schema({
         required: true
     },
     items: [CartItemSchema],
-    itemAmount: {
-        type: Number,
-        default: 0
-    }
 }, { timestamps: true });
 
 const Cart = mongoose.model('Cart', CartSchema);
