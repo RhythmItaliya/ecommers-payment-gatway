@@ -102,7 +102,6 @@ export const AddCard = () => {
         }
     };
 
-
     const handlePay = async () => {
         if (!stripe || !elements) {
             setError('Stripe has not yet loaded.');
