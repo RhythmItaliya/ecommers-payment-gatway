@@ -1,8 +1,9 @@
+import React, { useState, useEffect, useContext } from 'react';
 import { CardCvcElement, CardExpiryElement, CardNumberElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
 import { useSelector } from 'react-redux';
+import { jwtDecode } from 'jwt-decode';
+import { CartContext } from '../contexts/CartContext';
 
 export const AddCard = () => {
     const stripe = useStripe();
@@ -11,6 +12,8 @@ export const AddCard = () => {
     const [postalCode, setPostalCode] = useState('');
     const [customer, setCustomer] = useState();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const { total } = useContext(CartContext);
 
     const token = useSelector(state => state.auth.token);
 
@@ -99,6 +102,69 @@ export const AddCard = () => {
         }
     };
 
+
+    const handlePay = async () => {
+        if (!stripe || !elements) {
+            setError('Stripe has not yet loaded.');
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        const cardElement = elements.getElement(CardNumberElement);
+
+        // Create Payment Method
+        const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardElement,
+            billing_details: {
+                name: name,
+                address: {
+                    postal_code: postalCode
+                }
+            }
+        });
+
+        if (paymentMethodError) {
+            setError(paymentMethodError.message);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            // Create Payment Intent
+            const { data: { client_secret } } = await axios.post('http://localhost:8000/api/payment-intent', {
+                payment_method_id: paymentMethod.id,
+                amount: total,
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            // Confirm Payment
+            const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
+                payment_method: paymentMethod.id,
+            });
+
+            if (confirmError) {
+                setError(confirmError.message);
+                console.error('Payment confirmation error:', confirmError);
+            } else if (paymentIntent.status === 'succeeded') {
+                console.log('Payment successful!', paymentIntent);
+                // Handle successful payment here
+            } else {
+                console.log('Payment status:', paymentIntent.status);
+                // Handle other payment statuses if needed
+            }
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            setError('An error occurred while processing your payment.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     return (
         <>
             <form onSubmit={handleSubmit}>
@@ -143,6 +209,27 @@ export const AddCard = () => {
                     </button>
                 </div>
             </form>
+
+            <div className="flex items-center justify-between">
+                <button
+                    type="button"
+                    onClick={handlePay}
+                    className={`bg-primary flex p-3 justify-center items-center text-white w-full font-medium mt-3 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <>
+                            <svg width="20" height="20" fill="currentColor" className="mr-2 animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z">
+                                </path>
+                            </svg>
+                            Paying...
+                        </>
+                    ) : (
+                        'Pay'
+                    )}
+                </button>
+            </div>
         </>
     );
 };

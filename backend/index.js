@@ -6,6 +6,7 @@ const PaymentMethod = require('./models/paymentMethod.model');
 const { userRouter } = require('./routes/user.routes');
 const cartRoutes = require('./routes/cart.routes');
 const stripeRouter = require('./routes/payment.routes');
+const paymentRoutes = require('./routes/directPay.routes');
 const { verifyUser } = require('./middlewares/verify');
 const { protectedRoute } = require('./middlewares/protectedRoute')
 
@@ -37,6 +38,7 @@ connectionMongodb().then(() => app.listen(PORT, () => {
 
 app.use('/api/user', userRouter)
 app.use('/api/cart', cartRoutes)
+app.use(paymentRoutes);
 
 app.use(verifyUser)
 app.use('/api/stripe', stripeRouter)

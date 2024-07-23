@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import { useSelector } from 'react-redux';
 
 const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
     const [cards, setCards] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
 
+    const token = useSelector(state => state.auth.token);
+
     useEffect(() => {
-        getSavedCards();
-    }, []);
+        if (token) {
+            getSavedCards();
+        } else {
+            console.error('No token available');
+        }
+    }, [token]);
 
     const getSavedCards = async () => {
         try {
-            const res = await axios.get(`http://localhost:8000/api/stripe/get-cards`, {
+            const res = await axios.get('http://localhost:8000/api/stripe/get-cards', {
                 headers: {
-                    Authorization: `Bearer ${Cookies.get('token')}`
+                    Authorization: `Bearer ${token}`
                 }
             });
             setCards(res.data.data);
@@ -28,11 +34,11 @@ const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
 
         try {
             await axios.post(
-                `http://localhost:8000/api/stripe/remove-card`,
+                'http://localhost:8000/api/stripe/remove-card',
                 { card_id: selectedCard.id },
                 {
                     headers: {
-                        Authorization: `Bearer ${Cookies.get('token')}`
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );
@@ -69,7 +75,7 @@ const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
                                     <input
                                         type="radio"
                                         name="selectedCard"
-                                        checked={selectedCard && selectedCard.id === card.id}
+                                        checked={selectedCard?.id === card.id || false} // Ensure `checked` is always controlled
                                         onChange={() => handleCardSelection(card)}
                                         className="form-radio h-4 w-4 text-blue-500"
                                     />
@@ -85,7 +91,7 @@ const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
                     )}
                 </tbody>
             </table>
-            {/* <div className="mt-4 flex justify-between">
+            <div className="mt-4 flex justify-between">
                 <button
                     onClick={handleRemoveCard}
                     className="bg-red-500 text-white py-1 px-4 rounded hover:bg-red-600 transition-colors disabled:opacity-50"
@@ -99,7 +105,7 @@ const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
                 >
                     Cancel
                 </button>
-            </div> */}
+            </div>
         </div>
     );
 };

@@ -6,6 +6,7 @@ import App from "./App";
 import ProductProvider from "./contexts/ProductContext";
 import SidebarProvider from "./contexts/SidebarContext";
 import CartProvider from "./contexts/CartContext";
+import { CardProvider } from './contexts/CardContext';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
@@ -15,11 +16,13 @@ root.render(
     <SidebarProvider>
       <CartProvider>
         <ProductProvider>
-          <React.StrictMode>
-            <App />
-          </React.StrictMode>
+          <CardProvider>
+            <React.StrictMode>
+              <App />
+            </React.StrictMode>
+          </CardProvider>
         </ProductProvider>
       </CartProvider>
-    </SidebarProvider>
-  </Provider>
+    </SidebarProvider >
+  </Provider >
 );

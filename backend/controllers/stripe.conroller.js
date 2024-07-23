@@ -1,5 +1,6 @@
-const Stripe = require('stripe');
-const stripe = Stripe('sk_test_51ORpDXSJivXBSgori9VyO88wHrWoD4kOsehaFCOgbYrTMMT6sRLztCh2vMeDNQmTpNBSSRJlbSIvWRmWPUeYT5ZB00iRVWyH5z');
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_KEY);
+const currency = require('currency.js');
 const Card = require('../models/card.model');
 
 const attachPaymentMethod = async (req, res) => {
@@ -79,21 +80,38 @@ const getCardInfo = async (req, res) => {
 }
 
 const checkOutCard = async (req, res) => {
-    const { payment_method_id } = req.body
+    const { payment_method_id, amount } = req.body;
+
+    if (!payment_method_id || !amount) {
+        return res.status(400).json({ message: 'Payment method ID and amount are required' });
+    }
+
     try {
-        console.log("🚀 ~ checkOutCard ~ req.body:", req.body)
+        const amountInCents = currency(amount, { fromCents: false }).intValue;
+
+        console.log("🚀 ~ checkOutCard ~ req.body:", req.body);
+
         const paymentIntent = await stripe.paymentIntents.create({
             customer: req.user.user.customer_id,
             payment_method: payment_method_id,
-            amount: 1000,
+            amount: amountInCents,
             currency: 'usd',
+            confirm: true,
+            return_url: 'http://localhost:3000'
         });
-        console.log("🚀 ~ checkOutCard ~ paymentIntent:", paymentIntent)
-        res.json({ success: true, paymentIntent });
+
+        console.log("🚀 ~ checkOutCard ~ paymentIntent:", paymentIntent);
+
+        res.json({
+            success: true,
+            paymentIntentId: paymentIntent.id,
+            status: paymentIntent.status,
+        });
+
     } catch (error) {
         console.error('Error processing payment:', error);
         res.status(500).json({ error: error.message });
     }
-}
+};
 
 module.exports = { attachPaymentMethod, addCardToCustomer, getCardInfo, checkOutCard }
