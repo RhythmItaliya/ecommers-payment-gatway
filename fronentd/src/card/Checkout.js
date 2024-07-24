@@ -44,7 +44,7 @@ const Checkout = () => {
             console.log('Payment successful!');
             console.log('Checkout response:', response);
             clearCart();
-            navigate('/success');
+            navigate('/success', { state: { paymentIntentId: response.paymentIntentId } });
         } catch (error) {
             console.log('Error during payment process:');
             if (error.response && error.response.data) {
@@ -62,7 +62,6 @@ const Checkout = () => {
 
     const checkOut = async (payload, setError) => {
         console.log('Checkout request payload:', payload);
-
         try {
             const res = await axios.post('http://localhost:8000/api/stripe/checkout', payload, {
                 headers: {
@@ -84,7 +83,6 @@ const Checkout = () => {
             throw error;
         }
     };
-
 
     return (
         <div className="flex items-center justify-center min-h-screen mt-24 shadow-md rounded-lg bg-gray-100 p-6">
@@ -150,7 +148,6 @@ const Checkout = () => {
                     {paymentMethod === 'existing' && (
                         <>
                             <ExitCard onCardSelect={setSelectedCard} />
-
                             {/* Payment Button */}
                             <div className="flex items-center justify-between">
                                 <button
@@ -173,7 +170,6 @@ const Checkout = () => {
                             </div>
                         </>
                     )}
-
                 </div>
             </div>
         </div>

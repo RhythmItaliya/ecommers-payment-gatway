@@ -198,7 +198,7 @@ export const AddCard = () => {
                 // Handle successful payment
                 console.log('Payment succeeded');
                 clearCart();
-                navigate('/success');
+                navigate('/success', { state: { paymentIntentId: paymentIntent.id } });
             } else {
                 // Handle other payment statuses
                 console.log('Unexpected payment status:', paymentIntent.status);

@@ -34,3 +34,22 @@ exports.createPaymentIntent = async (req, res) => {
         res.status(500).json({ message: 'Failed to create payment intent', error: error.message });
     }
 };
+
+exports.checkPaymentStatus = async (req, res) => {
+    const { paymentIntentId } = req.params;
+
+    if (!paymentIntentId) {
+        return res.status(400).json({ message: 'Payment Intent ID is required' });
+    }
+
+    try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        res.json({
+            success: true,
+            paymentIntent,
+        });
+    } catch (error) {
+        console.error('Error fetching payment status:', error);
+        res.status(500).json({ message: 'Failed to fetch payment status', error: error.message });
+    }
+};
