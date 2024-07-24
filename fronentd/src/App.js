@@ -11,6 +11,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Checkout from "./card/Checkout";
+import SuccessPage from "./pages/SuccessPage";
 
 const stripePromise = loadStripe('pk_test_51ORpDXSJivXBSgor7CxOo2rbwC8nhsIfwqxlxb76hPtuTzY4z2we4yK30AnBGsFbalURavuyqsk8obBmYRd7ZA8d00UPnsjnGY')
 
@@ -35,6 +36,7 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/success" element={<SuccessPage />} />
               </Routes>
               <Sidebar />
               <Footer />

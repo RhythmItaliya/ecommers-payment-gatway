@@ -17,7 +17,8 @@ exports.createPaymentIntent = async (req, res) => {
             currency: 'usd',
             payment_method: payment_method_id,
             confirm: true,
-            return_url: 'http://localhost:3000'
+            return_url: 'http://localhost:3000/success',
+            description: 'Description of the transaction'
         });
 
         console.log("🚀 ~ checkOutCard ~ paymentIntent:", paymentIntent);
@@ -25,6 +26,7 @@ exports.createPaymentIntent = async (req, res) => {
         res.json({
             success: true,
             paymentIntentId: paymentIntent.id,
+            client_secret: paymentIntent.client_secret,
             status: paymentIntent.status,
         });
     } catch (error) {

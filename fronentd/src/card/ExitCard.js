@@ -57,7 +57,7 @@ const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
     };
 
     return (
-        <div className="container mx-auto mt-6 p-4 bg-white rounded-md shadow-sm border border-gray-200">
+        <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">Your Cards</h2>
             <table className="w-full border-collapse">
                 <thead>

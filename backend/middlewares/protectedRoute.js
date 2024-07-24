@@ -11,7 +11,6 @@ const protectedRoute = (req, res, next) => {
         });
     }
 
-    // Check if the token starts with "Bearer"
     if (!authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
             message: "Invalid authorization header format",
@@ -19,9 +18,8 @@ const protectedRoute = (req, res, next) => {
         });
     }
 
-    // Extract the token from the "Bearer" scheme
     const token = authHeader.split(" ")[1];
-    console.log("🚀 ~ protectedRoute ~ token:", token);
+    // console.log("🚀 ~ protectedRoute ~ token:", token);
 
     try {
         const validUser = jwtService.verifyAccessToken(token);

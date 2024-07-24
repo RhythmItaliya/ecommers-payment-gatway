@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AddCard } from './AddCard';
 import ExitCard from './ExitCard';
 import CheckOutItem from './CheckOutItem';
@@ -7,6 +7,7 @@ import { useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
 import { IoMdClose } from 'react-icons/io';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
     const { cart, total, clearCart, removeFromCart } = useContext(CartContext);
@@ -15,47 +16,78 @@ const Checkout = () => {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const [error, setError] = useState(null);
 
     const token = useSelector(state => state.auth.token);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     const handlePayment = async () => {
         if (!stripe || !elements || !selectedCard) {
-            alert('Please complete the payment information.');
+            console.log('Error: Stripe, elements, or selected card is not initialized.');
+            setError('Please complete the payment information.');
+
             return;
         }
-        console.log(`Total amount for checkout: $${total}`);
         const payload = {
             payment_method_id: selectedCard.id,
             amount: total
         };
+        console.log('Payment payload:', payload);
         setLoading(true);
+        setError(null);
         try {
-            await checkOut(payload);
+            const response = await checkOut(payload);
             console.log('Payment successful!');
+            console.log('Checkout response:', response);
             clearCart();
+            navigate('/success');
         } catch (error) {
-            console.error('Error while checking out:', error);
-            alert('An error occurred while processing your payment. Please try again.');
+            console.log('Error during payment process:');
+            if (error.response && error.response.data) {
+                console.log(`Error message: ${error.response.data.message}`);
+                console.log('Full error details:', error.response.data);
+                setError(`Payment failed: ${error.response.data.message}`);
+            } else {
+                console.log('An unexpected error occurred:', error.message);
+                setError(`Payment failed: ${error.message}`);
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const checkOut = async (payload) => {
+    const checkOut = async (payload, setError) => {
+        console.log('Checkout request payload:', payload);
+
         try {
-            const res = await axios.post(`http://localhost:8000/api/stripe/checkout`, payload, {
+            const res = await axios.post('http://localhost:8000/api/stripe/checkout', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
-            })
-            console.log(res.data);
+            });
+            console.log('Checkout response data:', res.data);
+            return res.data;
         } catch (error) {
-            console.error('Error while checking out:', error);
+            console.log('Stripe checkout error details:');
+            if (error.response && error.response.data) {
+                console.log('Error message:', error.response.data.message);
+                console.log('Error details:', error.response.data);
+                setError(`Payment processing error: ${error.response.data.message}`);
+            } else {
+                console.log('Error message:', error.message);
+                setError(`Payment processing error: ${error.message}`);
+            }
+            throw error;
         }
-    }
+    };
+
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen mt-24 shadow-md rounded-lg bg-gray-100 p-6">
             <div className="flex flex-col lg:flex-row w-full max-w-6xl bg-white shadow-lg rounded-lg overflow-hidden">
                 {/* Product Details Section */}
                 <div className="w-full lg:w-1/2 p-6 border-b lg:border-b-0 lg:border-r border-gray-200">
@@ -132,7 +164,7 @@ const Checkout = () => {
                                             <svg width="20" height="20" fill="currentColor" className="mr-2 animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z" />
                                             </svg>
-                                            Paying...
+                                            Processing...
                                         </>
                                     ) : (
                                         'Pay'
