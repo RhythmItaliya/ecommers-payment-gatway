@@ -25,8 +25,7 @@ app.use(cors({
 }))
 
 const connectionMongodb = async () => {
-    // mongodb+srv://webdev826:webdev123@stripe.gsb95ua.mongodb.net/?retryWrites=true&w=majority&appName=Stripe
-    await mongoose.connect('mongodb://localhost:27017/', {
+    await mongoose.connect(process.env.MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })
