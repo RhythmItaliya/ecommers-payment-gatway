@@ -1,53 +1,60 @@
 const express = require('express');
-const { default: mongoose } = require('mongoose');
-const products = require('./products')
+const { products } = require('./products')
+const mongoose = require('mongoose');
 const cors = require('cors');
-const PaymentMethod = require('./models/paymentMethod.model');
-const { userRouter } = require('./routes/user.routes');
-const cartRoutes = require('./routes/cart.routes');
-const stripeRouter = require('./routes/payment.routes');
-const paymentRoutes = require('./routes/directPay.routes');
-const { verifyUser } = require('./middlewares/verify');
-const { protectedRoute } = require('./middlewares/protectedRoute')
-
-const dotenv = require('dotenv').config({ path: "./.env" })
-const stripe = require('stripe')(process.env.STRIPE_KEY)
-
-const PORT = 8000;
+const Product = require('./models/product.model');
+require('dotenv').config();
 
 const app = express();
 
-app.use(express.json());
-
+// Middleware
 app.use(cors({
-    origin: true,
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
-}))
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const connectionMongodb = async () => {
-    await mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-}
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/snapshop')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-connectionMongodb().then(() => app.listen(PORT, () => {
-    console.log(`Example app listening at http://localhost:${PORT}`)
-})).catch(() => console.log("Connection is not established!"))
+// Routes
+app.use('/api/user', require('./routes/user.routes'));
+app.use('/api/admin/auth', require('./routes/adminAuth.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/cart', require('./routes/cart.routes'));
+app.use('/api/payment', require('./routes/payment.routes'));
+app.use('/api/razorpay', require('./routes/razorpay.routes'));
+app.use('/api/direct-pay', require('./routes/directPay.routes'));
+app.use('/api/wishlist', require('./routes/wishlist.routes'));
 
-app.use('/api/user', userRouter)
-app.use('/api/cart', cartRoutes)
-app.use(paymentRoutes);
-
-app.use(verifyUser)
-app.use('/api/stripe', stripeRouter)
-
-app.get('/api/protect', protectedRoute, (req, res) => {
-    res.send(`This is a protected endpoint. Welcome, ${req.user.username}!`);
-});
-
-app.get('/products', (req, res) => {
-    res.send(products)
+// Products route - serve from database instead of static file
+app.get('/products', async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ id: 1 });
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    // Fallback to static products if database fails
+    res.json(products);
+  }
 })
 
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', message: 'SnapShop Backend is running' });
+});
 
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`API Base URL: http://localhost:${PORT}/api`);
+  console.log(`Admin API: http://localhost:${PORT}/api/admin`);
+  console.log(`User API: http://localhost:${PORT}/api/user`);
+  console.log(`Cart API: http://localhost:${PORT}/api/cart`);
+  console.log(`Wishlist API: http://localhost:${PORT}/api/wishlist`);
+});

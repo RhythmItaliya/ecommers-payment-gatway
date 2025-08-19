@@ -1,7 +1,7 @@
 import React from 'react';
 
 const CheckOutItem = ({ item }) => {
-    const { title, image, price, amount } = item;
+    const { title, image, price, quantity } = item;
 
     return (
         <div className="flex gap-x-4 py-2 border-b border-gray-200 w-full font-light text-gray-500">
@@ -16,7 +16,7 @@ const CheckOutItem = ({ item }) => {
                     <div className="flex gap-x-2 h-[36px] text-sm">
                         {/* Quantity */}
                         <div className="flex items-center text-primary font-medium">
-                            Quantity: {amount}
+                            Quantity: {quantity}
                         </div>
                         {/* Item Price */}
                         <div className="flex items-center justify-center">
@@ -24,7 +24,7 @@ const CheckOutItem = ({ item }) => {
                         </div>
                         {/* Final Price */}
                         <div className="flex items-center justify-end text-primary font-medium">
-                            ${parseFloat(price * amount).toFixed(2)}
+                            ${parseFloat(price * quantity).toFixed(2)}
                         </div>
                     </div>
                 </div>

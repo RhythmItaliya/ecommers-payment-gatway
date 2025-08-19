@@ -9,25 +9,25 @@ const ExitCard = ({ onRemoveSuccess, onRemoveError, onCardSelect }) => {
     const token = useSelector(state => state.auth.token);
 
     useEffect(() => {
+        const getSavedCards = async () => {
+            try {
+                const res = await axios.get('http://localhost:8000/api/stripe/get-cards', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setCards(res.data.data);
+            } catch (error) {
+                console.error('Error fetching saved cards:', error);
+            }
+        };
+
         if (token) {
             getSavedCards();
         } else {
             console.error('No token available');
         }
     }, [token]);
-
-    const getSavedCards = async () => {
-        try {
-            const res = await axios.get('http://localhost:8000/api/stripe/get-cards', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setCards(res.data.data);
-        } catch (error) {
-            console.error('Error fetching saved cards:', error);
-        }
-    };
 
     const handleRemoveCard = async () => {
         if (!selectedCard) return;

@@ -4,11 +4,8 @@ const { attachPaymentMethod, addCardToCustomer, getCardInfo, checkOutCard } = re
 const stripeRouter = express.Router();
 
 stripeRouter.post('/attach-payment-method', attachPaymentMethod);
-
-stripeRouter.post('/add-card', addCardToCustomer)
-
+stripeRouter.post('/add-card', addCardToCustomer);
 stripeRouter.get('/get-cards', getCardInfo);
-
-stripeRouter.post('/checkout',checkOutCard)
+stripeRouter.post('/checkout', checkOutCard);
 
 module.exports = stripeRouter;

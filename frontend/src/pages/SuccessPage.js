@@ -3,10 +3,12 @@ import axios from 'axios';
 import Lottie from 'lottie-react';
 import successAnimation from '../img/success.json';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const SuccessPage = () => {
     const location = useLocation();
-    const { paymentIntentId } = location.state || {};
+    const { paymentIntentId, paymentMethod = 'Stripe' } = location.state || {};
+    const token = useSelector(state => state.auth.token);
 
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -17,8 +19,26 @@ const SuccessPage = () => {
             if (!paymentIntentId) return;
 
             try {
-                const response = await axios.get(`http://localhost:8000/api/payment-status/${paymentIntentId}`);
-                setPaymentStatus(response.data.paymentIntent);
+                let response;
+                if (paymentMethod === 'Razorpay') {
+                    // For Razorpay, use the payment ID endpoint
+                    response = await axios.get(`http://localhost:8000/api/razorpay/payment/${paymentIntentId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    setPaymentStatus(response.data.payment);
+                } else {
+                    // For Stripe, use the existing payment status endpoint
+                    response = await axios.get(`http://localhost:8000/api/payment-status/${paymentIntentId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    setPaymentStatus(response.data.paymentIntent);
+                }
             } catch (error) {
                 setError('Error fetching payment status');
                 console.error('Error fetching payment status:', error);
@@ -28,7 +48,7 @@ const SuccessPage = () => {
         };
 
         fetchPaymentStatus();
-    }, [paymentIntentId]);
+    }, [paymentIntentId, paymentMethod, token]);
 
     if (loading) {
         return (
@@ -69,34 +89,54 @@ const SuccessPage = () => {
                     <h4 className="text-2xl font-semibold mb-6">Payment Details</h4>
                     {paymentStatus && (
                         <div className="space-y-4">
-                            {[
-                                { label: 'Payment ID', value: paymentStatus.id },
-                                { label: 'Amount', value: `$${(paymentStatus.amount / 100).toFixed(2)}` },
-                                { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
-                                { label: 'Status', value: paymentStatus.status },
-                                { label: 'Client Secret', value: paymentStatus.client_secret },
-                                { label: 'Capture Method', value: paymentStatus.capture_method },
-                                { label: 'Payment Method', value: paymentStatus.payment_method },
-                                { label: 'Redirect URL', value: redirectUrl },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center space-x-4 border-b border-gray-200 pb-3">
-                                    <span className="font-semibold w-1/3 text-gray-900">{label}</span>
-                                    <div className="w-2/3 overflow-x-auto">
-                                        {label === 'Redirect URL' ? (
-                                            <a
-                                                href={value}
-                                                className="text-blue-500 truncate"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {value}
-                                            </a>
-                                        ) : (
+                            {paymentMethod === 'Razorpay' ? (
+                                // Razorpay payment details
+                                [
+                                    { label: 'Payment ID', value: paymentStatus.id },
+                                    { label: 'Amount', value: `₹${(paymentStatus.amount / 100).toFixed(2)}` },
+                                    { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
+                                    { label: 'Status', value: paymentStatus.status },
+                                    { label: 'Payment Method', value: paymentStatus.method || 'Razorpay' },
+                                    { label: 'Created At', value: new Date(paymentStatus.created_at * 1000).toLocaleString() },
+                                ].map(({ label, value }) => (
+                                    <div key={label} className="flex items-center space-x-4 border-b border-gray-200 pb-3">
+                                        <span className="font-semibold w-1/3 text-gray-900">{label}</span>
+                                        <div className="w-2/3 overflow-x-auto">
                                             <span>{value}</span>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                // Stripe payment details
+                                [
+                                    { label: 'Payment ID', value: paymentStatus.id },
+                                    { label: 'Amount', value: `$${(paymentStatus.amount / 100).toFixed(2)}` },
+                                    { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
+                                    { label: 'Status', value: paymentStatus.status },
+                                    { label: 'Client Secret', value: paymentStatus.client_secret },
+                                    { label: 'Capture Method', value: paymentStatus.capture_method },
+                                    { label: 'Payment Method', value: paymentStatus.payment_method },
+                                    { label: 'Redirect URL', value: redirectUrl },
+                                ].map(({ label, value }) => (
+                                    <div key={label} className="flex items-center space-x-4 border-b border-gray-200 pb-3">
+                                        <span className="font-semibold w-1/3 text-gray-900">{label}</span>
+                                        <div className="w-2/3 overflow-x-auto">
+                                            {label === 'Redirect URL' ? (
+                                                <a
+                                                    href={value}
+                                                    className="text-blue-500 truncate"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    {value}
+                                                </a>
+                                            ) : (
+                                                <span>{value}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     )}
                 </div>

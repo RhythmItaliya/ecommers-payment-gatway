@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { CardCvcElement, CardExpiryElement, CardNumberElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { jwtDecode } from 'jwt-decode';
-import { CartContext } from '../contexts/CartContext';
+import React, { useState, useEffect, useContext } from "react";
+import { useStripe, useElements, CardNumberElement } from '@stripe/react-stripe-js';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearCart } from '../redux/cartAction';
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+import { CardCvcElement, CardExpiryElement } from '@stripe/react-stripe-js';
 
 
 export const AddCard = () => {
@@ -14,10 +14,10 @@ export const AddCard = () => {
     const [customer, setCustomer] = useState();
     const [pLoading, setPLoading] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const { total, clearCart } = useContext(CartContext);
+    const { total } = useSelector(state => state.cart);
     const navigate = useNavigate();
     const token = useSelector(state => state.auth.token);
+    const dispatch = useDispatch();
 
     const [addressLine1, setAddressLine1] = useState('');
     const [addressLine2, setAddressLine2] = useState('');
@@ -42,11 +42,9 @@ export const AddCard = () => {
         event.preventDefault();
         if (!stripe || !elements) {
             console.log('Stripe has not yet loaded.');
-            setError('Stripe has not yet loaded.');
             return;
         }
         setLoading(true);
-        setError(null);
         const cardElement = elements.getElement(CardNumberElement);
         try {
             // Create Payment Method
@@ -67,7 +65,6 @@ export const AddCard = () => {
             });
             if (paymentMethodError) {
                 console.error('Error creating payment method:', paymentMethodError);
-                setError(paymentMethodError.message);
                 setLoading(false);
                 return;
             }
@@ -75,7 +72,6 @@ export const AddCard = () => {
             const { error: stripeError, token } = await stripe.createToken(cardElement);
             if (stripeError) {
                 console.error('Error creating token:', stripeError);
-                setError(stripeError.message);
                 setLoading(false);
                 return;
             }
@@ -86,30 +82,10 @@ export const AddCard = () => {
             setLoading(false);
         } catch (error) {
             console.error('Error:', error);
-            setError(error.message);
             setLoading(false);
         }
     };
 
-
-    const attachPaymentMethod = async (paymentMethodId) => {
-        try {
-            const response = await axios.post(`http://localhost:8000/api/stripe/attach-payment-method`, {
-                customer_id: customer.user.customer_id,
-                payment_method_id: paymentMethodId
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            console.log(response.data);
-            // Handle success response from the server
-        } catch (error) {
-            console.error('Error saving payment method:', error);
-            // Handle error
-        }
-    };
 
     const addCardToCustomer = async (customer_id, card_token) => {
         try {
@@ -133,11 +109,9 @@ export const AddCard = () => {
     const handlePay = async () => {
         if (!stripe || !elements) {
             console.log('Stripe has not yet loaded.');
-            setError('Stripe has not yet loaded.');
             return;
         }
         setPLoading(true);
-        setError(null);
         const cardElement = elements.getElement(CardNumberElement);
         try {
             console.log('Creating payment method...');
@@ -159,7 +133,6 @@ export const AddCard = () => {
             });
             if (paymentMethodError) {
                 console.log('Payment method creation error:', paymentMethodError);
-                setError(paymentMethodError.message);
                 return;
             }
             console.log('Payment method created:', paymentMethod);
@@ -182,7 +155,6 @@ export const AddCard = () => {
             });
             if (confirmError) {
                 console.log('Payment confirmation error:', confirmError);
-                setError(confirmError.message);
                 return;
             }
             console.log('Payment intent status:', paymentIntent.status);
@@ -193,22 +165,19 @@ export const AddCard = () => {
                     const { error: actionError } = await stripe.handleCardAction(next_action.use_stripe_sdk);
                     if (actionError) {
                         console.log('Additional authentication error:', actionError);
-                        setError(actionError.message);
                     }
                 }
             } else if (paymentIntent.status === 'succeeded') {
                 // Handle successful payment
                 console.log('Payment succeeded');
-                clearCart();
+                dispatch(clearCart());
                 navigate('/success', { state: { paymentIntentId: paymentIntent.id } });
             } else {
                 // Handle other payment statuses
                 console.log('Unexpected payment status:', paymentIntent.status);
-                setError('Unexpected payment status: ' + paymentIntent.status);
             }
         } catch (error) {
             console.error('Error processing payment:', error);
-            setError('An error occurred while processing your payment.');
         } finally {
             setPLoading(false);
         }

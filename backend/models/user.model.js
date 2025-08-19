@@ -22,6 +22,53 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'customer_id is required!'],
         unique: '{VALUE} is already exists!'
+    },
+    phone: {
+        type: String,
+        default: '',
+        validate: {
+            validator: function(v) {
+                // Allow empty string or valid phone format
+                return v === '' || /^[\+]?[1-9][\d]{0,15}$/.test(v);
+            },
+            message: 'Please enter a valid phone number'
+        }
+    },
+    address: {
+        streetAddress: {
+            type: String,
+            default: '',
+            maxlength: [100, 'Street address cannot exceed 100 characters']
+        },
+        apartment: {
+            type: String,
+            default: '',
+            maxlength: [50, 'Apartment info cannot exceed 50 characters']
+        },
+        city: {
+            type: String,
+            default: '',
+            maxlength: [50, 'City name cannot exceed 50 characters']
+        },
+        state: {
+            type: String,
+            default: '',
+            maxlength: [50, 'State name cannot exceed 50 characters']
+        },
+        country: {
+            type: String,
+            default: '',
+            maxlength: [50, 'Country name cannot exceed 50 characters']
+        },
+        zipCode: {
+            type: String,
+            default: '',
+            maxlength: [20, 'ZIP code cannot exceed 20 characters']
+        }
+    },
+    avatar: {
+        type: String,
+        default: ''
     }
 }, {
     timestamps: true

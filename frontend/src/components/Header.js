@@ -1,24 +1,77 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { SidebarContext } from "../contexts/SidebarContext";
-import { CartContext } from "../contexts/CartContext";
-import { AuthContext } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import Logo from "../img/logo.svg";
-import { BsBag, BsSearch, BsHeart, BsPerson, BsTelephone } from "react-icons/bs";
-import { IoMdArrowDown } from "react-icons/io";
+import { BsBag, BsHeart, BsList, BsX, BsChevronDown } from "react-icons/bs";
 import Login from "../auth/Login";
 import Register from "../auth/Register";
-import Logout from "../auth/Logout";
+import { checkAuthStatus } from "../redux/authAction";
+import { fetchCart } from "../redux/cartAction";
+import { fetchWishlist } from "../redux/wishlistAction";
+import { logoutUser } from "../redux/authAction";
+import { showSuccessToast } from "../redux/toastAction";
 
 const Header = () => {
   const [isActive, setIsActive] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  
   const { isOpen, setIsOpen } = useContext(SidebarContext);
-  const { itemAmount } = useContext(CartContext);
-  const { isLoggedIn, loading } = useContext(AuthContext);
+  // Get auth state directly from Redux instead of context
+  const { isLoggedIn, loading, user } = useSelector(state => state.auth);
+  const dispatch = useDispatch();
+  
+  // Debug: Log current auth state
+  console.log('Header - Current Redux auth state:', { isLoggedIn, loading, user });
+  console.log('Header - Component re-rendering with state:', { isLoggedIn, loading, user });
+  
+  // Get cart and wishlist counts from Redux
+  const { totalQuantity: cartCount } = useSelector(state => state.cart);
+  const { totalItems: wishlistCount } = useSelector(state => state.wishlist);
+
+  // Check auth status when component mounts
+  useEffect(() => {
+    console.log('Header mounted, checking auth status...');
+    
+    // Check if there's already a token in localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('Token found in localStorage, checking auth status...');
+      dispatch(checkAuthStatus());
+    } else {
+      console.log('No token found in localStorage');
+    }
+  }, [dispatch]);
+
+  // Debug: Log whenever auth state changes
+  useEffect(() => {
+    console.log('Header - Auth state changed:', { isLoggedIn, loading, user });
+  }, [isLoggedIn, loading, user]);
+
+  // Fetch cart and wishlist data when user is authenticated
+  useEffect(() => {
+    if (isLoggedIn) {
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
+    }
+  }, [isLoggedIn, dispatch]);
+
+  // Close user dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownOpen && !event.target.closest('.user-dropdown')) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userDropdownOpen]);
 
   const handleLoginClick = () => setIsLoginModalOpen(true);
   const handleRegisterClick = () => setIsRegisterModalOpen(true);
@@ -33,22 +86,26 @@ const Header = () => {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // Handle search functionality
-    console.log("Searching for:", searchQuery);
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const toggleDropdown = (dropdown) => {
-    if (activeDropdown === dropdown) {
-      setActiveDropdown(null);
-    } else {
-      setActiveDropdown(dropdown);
+  const handleLogout = async () => {
+    try {
+      // Dispatch logout action
+      const result = await dispatch(logoutUser());
+      
+      if (logoutUser.fulfilled.match(result)) {
+        // Show success toast
+        dispatch(showSuccessToast('Logged out successfully!'));
+      }
+      
+      // Close dropdowns
+      setUserDropdownOpen(false);
+      setMobileMenuOpen(false);
+    } catch (error) {
+      console.error('Logout error:', error);
     }
-  };
-
-  const closeDropdowns = () => {
-    setActiveDropdown(null);
   };
 
   useEffect(() => {
@@ -60,222 +117,318 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      closeDropdowns();
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
   if (loading) {
-    return;
+    return null;
   }
 
   return (
     <>
-      {/* Top bar */}
-      <div className="bg-primary text-white py-2 text-sm">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <BsTelephone className="text-xs" />
-              <span>+1 (555) 123-4567</span>
-            </div>
-            <span>Free shipping on orders over $50</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            {!isLoggedIn ? (
-              <>
-                <button onClick={handleLoginClick} className="hover:text-gray-300 transition">
-                  Sign In
-                </button>
-                <button onClick={handleRegisterClick} className="hover:text-gray-300 transition">
-                  Sign Up
-                </button>
-              </>
-            ) : (
-              <Logout />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Main header */}
+      {/* Main header - Clean and simple */}
       <header
-        className={`${isActive ? "bg-white py-3 shadow-lg" : "bg-white py-4"} fixed w-full z-10 transition-all duration-300`}
+        className={`${
+          isActive 
+            ? "bg-white py-3 shadow-md" 
+            : "bg-white py-5"
+        } fixed w-full z-50 transition-all duration-300`}
       >
         <div className="container mx-auto">
-          {/* Logo and search row */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
             <Link to="/" className="flex items-center space-x-3">
-              <div className="w-[45px]">
-                <img src={Logo} alt="Logo" />
+              <div className="w-12 h-12">
+                <img src={Logo} alt="Logo" className="w-full h-full" />
               </div>
-              <span className="text-2xl font-bold text-primary hidden md:block">FashionStore</span>
+              <span className="text-2xl font-bold text-primary hidden md:block">
+                SnapShop
+              </span>
             </Link>
 
-            {/* Search bar */}
-            <div className="flex-1 max-w-2xl mx-8 hidden md:block">
-              <form onSubmit={handleSearch} className="relative">
-                <input
-                  type="text"
-                  placeholder="Search for products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+            {/* Desktop Navigation Menu - Hidden on mobile */}
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
+              >
+                Home
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
+              </Link>
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
+              >
+                Men
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
+              </Link>
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
+              >
+                Women
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
+              </Link>
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
+              >
+                New Arrivals
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
+              </Link>
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
+              >
+                Sale
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
+              </Link>
+              <div className="border-l border-gray-300 h-6 mx-2"></div>
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200"
+              >
+                About Us
+              </Link>
+              <Link 
+                to="/" 
+                className="text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200"
+              >
+                Contact Us
+              </Link>
+            </nav>
+
+            {/* Right side icons - Clean and minimal */}
+            <div className="flex items-center space-x-4 md:space-x-6">
+              {/* Mobile Menu Button - Visible only on mobile */}
+              <button
+                onClick={toggleMobileMenu}
+                className="md:hidden p-2 text-gray-600 hover:text-primary transition-colors duration-200"
+              >
+                {mobileMenuOpen ? <BsX size={24} /> : <BsList size={24} />}
+              </button>
+
+              {/* User profile / Auth - FIRST */}
+              {!isLoggedIn ? (
+                <div className="hidden sm:flex items-center space-x-4">
+                  <button 
+                    onClick={handleLoginClick} 
+                    className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
+                  >
+                    Sign In
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
+                  </button>
                 <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary"
+                    onClick={handleRegisterClick} 
+                    className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 relative group"
                 >
-                  <BsSearch className="text-xl" />
+                    Sign Up
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-200"></span>
                 </button>
-              </form>
-            </div>
+                </div>
+              ) : (
+                <div className="hidden sm:block relative">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative user-dropdown">
+                      <button
+                        onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                          {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">{user?.username || 'User'}</span>
+                        <BsChevronDown className={`text-gray-500 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {/* User Dropdown Menu */}
+                      {userDropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                          <Link
+                            to="/profile"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                            onClick={() => setUserDropdownOpen(false)}
+                          >
+                            My Profile
+                          </Link>
+                          <Link
+                            to="/wishlist"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                            onClick={() => setUserDropdownOpen(false)}
+                          >
+                            My Wishlist
+                          </Link>
+                          <div className="border-t border-gray-200 my-1"></div>
+                          <button
+                            onClick={handleLogout}
+                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors duration-200"
+                          >
+                            Sign Out
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            {/* Right side icons */}
-            <div className="flex items-center space-x-6">
-              <button className="relative group">
-                <BsHeart className="text-2xl text-gray-600 group-hover:text-red-500 transition-colors" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
-              </button>
+              {/* Wishlist - LAST */}
+              <Link to="/wishlist" className="relative group">
+                <BsHeart className="text-2xl text-gray-600 group-hover:text-red-500 transition-colors duration-200" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
               
-              <button className="relative group">
-                <BsPerson className="text-2xl text-gray-600 group-hover:text-primary transition-colors" />
-              </button>
-
-              <button onClick={handleCartClick} className="relative group">
-                <BsBag className="text-2xl text-gray-600 group-hover:text-primary transition-colors" />
-                {itemAmount > 0 && (
-                  <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                    {itemAmount}
+              {/* Cart - LAST */}
+              <button 
+                onClick={handleCartClick} 
+                className="relative group"
+              >
+                <BsBag className="text-2xl text-gray-600 group-hover:text-primary transition-colors duration-200" />
+                {cartCount > 0 && (
+                  <div className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {cartCount}
                   </div>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Navigation menu */}
-          <nav className="flex items-center justify-center space-x-8 text-sm font-medium">
-            <div className="group relative">
-              <button 
-                className="flex items-center space-x-1 py-2 hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleDropdown('women');
-                }}
-              >
-                <span>Women</span>
-                <IoMdArrowDown className={`text-xs transition-transform ${activeDropdown === 'women' ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {/* Women Dropdown */}
-              {activeDropdown === 'women' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                  <div className="py-4">
-                    <div className="px-4">
-                      <h4 className="font-semibold text-primary mb-3">Women's Clothing</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li><Link to="/" className="hover:text-primary transition-colors">Dresses</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Tops & Blouses</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">T-Shirts</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Sweaters</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Pants & Jeans</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Skirts</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Jackets & Coats</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Activewear</Link></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
+          {/* Mobile Navigation Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
+              <div className="pt-4 space-y-3">
+                {/* Main Navigation Links */}
+                <Link 
+                  to="/" 
+                  className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <Link 
+                  to="/" 
+                  className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Men
+                </Link>
+                <Link 
+                  to="/" 
+                  className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Women
+                </Link>
+                <Link 
+                  to="/" 
+                  className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  New Arrivals
+                </Link>
+                <Link 
+                  to="/" 
+                  className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sale
+                </Link>
+                
+                {/* Divider */}
+                <div className="border-t border-gray-200 pt-3">
+                  <Link 
+                    to="/" 
+                    className="block text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200 py-2 px-3 rounded-lg bg-gray-100 hover:bg-gray-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About Us
+                  </Link>
+                  <Link 
+                    to="/" 
+                    className="block text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200 py-2 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 mt-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact Us
+                  </Link>
             </div>
             
-            <div className="group relative">
+                {/* Mobile Auth Buttons */}
+                {!isLoggedIn ? (
+                  <div className="border-t border-gray-200 pt-3 space-y-2">
+                    <button 
+                      onClick={() => {
+                        handleLoginClick();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                    >
+                      Sign In
+                    </button>
               <button 
-                className="flex items-center space-x-1 py-2 hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleDropdown('men');
-                }}
-              >
-                <span>Men</span>
-                <IoMdArrowDown className={`text-xs transition-transform ${activeDropdown === 'men' ? 'rotate-180' : ''}`} />
+                      onClick={() => {
+                        handleRegisterClick();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                    >
+                      Sign Up
               </button>
-              
-              {/* Men Dropdown */}
-              {activeDropdown === 'men' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                  <div className="py-4">
-                    <div className="px-4">
-                      <h4 className="font-semibold text-primary mb-3">Men's Clothing</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li><Link to="/" className="hover:text-primary transition-colors">Shirts</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">T-Shirts</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Sweaters</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Pants & Jeans</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Jackets & Coats</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Suits</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Activewear</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Underwear</Link></li>
-                      </ul>
-                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="group relative">
-              <button 
-                className="flex items-center space-x-1 py-2 hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleDropdown('jewelry');
-                }}
-              >
-                <span>Jewelry</span>
-                <IoMdArrowDown className={`text-xs transition-transform ${activeDropdown === 'jewelry' ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {/* Jewelry Dropdown */}
-              {activeDropdown === 'jewelry' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                  <div className="py-4">
-                    <div className="px-4">
-                      <h4 className="font-semibold text-primary mb-3">Jewelry</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li><Link to="/" className="hover:text-primary transition-colors">Necklaces</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Earrings</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Rings</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Bracelets</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Watches</Link></li>
-                        <li><Link to="/" className="hover:text-primary transition-colors">Anklets</Link></li>
-                      </ul>
+                ) : (
+                  <div className="border-t border-gray-200 pt-3 space-y-2">
+                    <div className="flex items-center space-x-3 py-2">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                        {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{user?.username || 'User'}</p>
+                        <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
+                      </div>
                     </div>
+                    <Link
+                      to="/profile"
+                      className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      to="/wishlist"
+                      className="block text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200 py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Wishlist
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left text-sm font-medium text-red-600 hover:text-red-700 transition-colors duration-200 py-2"
+                    >
+                      Sign Out
+                    </button>
                   </div>
+                )}
                 </div>
-              )}
             </div>
-            
-            <Link to="/" className="py-2 hover:text-primary transition-colors">
-              New Arrivals
-            </Link>
-            
-            <Link to="/" className="py-2 hover:text-primary transition-colors">
-              Sale
-            </Link>
-          </nav>
+          )}
         </div>
       </header>
 
       {/* Modals */}
-      {isLoginModalOpen && <Login isOpen={isLoginModalOpen} onClose={handleCloseLoginModal} onRegisterClick={handleRegisterClick} />}
-      {isRegisterModalOpen && <Register isOpen={isRegisterModalOpen} onClose={handleCloseRegisterModal} onLoginClick={handleLoginClick} />}
+      {isLoginModalOpen && (
+        <Login 
+          isOpen={isLoginModalOpen} 
+          onClose={handleCloseLoginModal} 
+          onRegisterClick={handleRegisterClick} 
+        />
+      )}
+      {isRegisterModalOpen && (
+        <Register 
+          isOpen={isRegisterModalOpen} 
+          onClose={handleCloseRegisterModal} 
+          onLoginClick={handleLoginClick} 
+        />
+      )}
     </>
   );
 };

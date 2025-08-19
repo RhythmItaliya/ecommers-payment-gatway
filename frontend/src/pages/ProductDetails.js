@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
 import { useParams } from "react-router-dom";
-import { CartContext } from "../contexts/CartContext";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/cartAction";
 import { ProductContext } from "../contexts/ProductContext";
 
 const ProductDetails = () => {
   // get the product id from url
   const { id } = useParams();
-  const { addToCart } = useContext(CartContext);
+  const dispatch = useDispatch();
   const { products } = useContext(ProductContext);
 
   //get the single product based on id
@@ -25,6 +26,11 @@ const ProductDetails = () => {
 
   // destructure product
   const { title, price, description, image } = product;
+  
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+  };
+  
   return (
     <section className="pt-[450px] md:pt-32 pb-[400px] md:pb-12 lg:py-32 h-screen flex items-center">
       <div className="container mx-auto">
@@ -39,7 +45,7 @@ const ProductDetails = () => {
             <h1 className="text-[26px] font-medium mb-2 max-w-[450px] mx-auto lg:mx-0">{title}</h1>
             <div className="text-2xl text-red-500 font-medium mb-6">$ {price}</div>
             <p className="mb-8">{description}</p>
-            <button onClick={()=>addToCart(product, product.id)} className='bg-primary py-4 px-8 text-white'>Add to cart</button>
+            <button onClick={handleAddToCart} className='bg-primary py-4 px-8 text-white'>Add to cart</button>
           </div>
         </div>
       </div>

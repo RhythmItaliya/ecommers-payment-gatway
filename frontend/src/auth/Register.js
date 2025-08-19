@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../redux/authAction';
+import { showSuccessToast, showErrorToast } from '../redux/toastAction';
 import { FaTimes } from 'react-icons/fa';
 
 const Register = ({ isOpen, onClose, onLoginClick }) => {
@@ -8,7 +10,9 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
         email: '',
         password: ''
     });
-    const [isLoading, setIsLoading] = useState(false);
+    
+    const dispatch = useDispatch();
+    const { loading } = useSelector(state => state.auth);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,15 +20,67 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
+        
+        // Basic frontend validation
+        if (!formData.username.trim()) {
+            dispatch(showErrorToast('Username is required'));
+            return;
+        }
+        
+        if (!formData.email.trim()) {
+            dispatch(showErrorToast('Email is required'));
+            return;
+        }
+        
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            dispatch(showErrorToast('Please enter a valid email address'));
+            return;
+        }
+        
+        if (!formData.password.trim()) {
+            dispatch(showErrorToast('Password is required'));
+            return;
+        }
+        
+        if (formData.password.length < 5) {
+            dispatch(showErrorToast('Password must be at least 5 characters long'));
+            return;
+        }
+        
         try {
-            const response = await axios.post(`http://localhost:8000/api/user`, formData);
-            console.log(response.data); // Handle response data as needed
-            onClose();
+            // Trim the form data before sending
+            const cleanFormData = {
+                username: formData.username.trim(),
+                email: formData.email.trim(),
+                password: formData.password
+            };
+            
+            const result = await dispatch(registerUser(cleanFormData));
+            
+            if (registerUser.fulfilled.match(result)) {
+                dispatch(showSuccessToast('Registration successful! You can now login.'));
+                onClose();
+            } else if (registerUser.rejected.match(result)) {
+                let errorMessage = 'Registration failed. Please try again.';
+                
+                if (result.payload) {
+                    // Handle different types of errors
+                    if (result.payload.errors && Array.isArray(result.payload.errors)) {
+                        // Multiple validation errors
+                        errorMessage = result.payload.errors.join(', ');
+                    } else if (result.payload.message) {
+                        // Single error message
+                        errorMessage = result.payload.message;
+                    }
+                }
+                
+                dispatch(showErrorToast(errorMessage));
+            }
         } catch (error) {
-            console.error('Error registering user:', error);
-        } finally {
-            setIsLoading(false);
+            console.error('Registration error:', error);
+            dispatch(showErrorToast('An error occurred during registration'));
         }
     };
 
@@ -32,7 +88,7 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full relative">
+            <div className={`bg-white p-8 rounded-lg shadow-lg max-w-md w-full relative ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <button
                     type="button"
                     onClick={onClose}
@@ -41,6 +97,7 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
                     <FaTimes size={20} />
                 </button>
                 <h2 className="text-2xl font-bold mb-4">Register</h2>
+                {/* Error messages now handled by toast notifications */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
@@ -51,8 +108,8 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                            disabled={isLoading}
-                            autoComplete="off"
+                            disabled={loading}
+                            autoComplete="username"
                         />
                     </div>
                     <div>
@@ -64,8 +121,8 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                            disabled={isLoading}
-                            autoComplete="off"
+                            disabled={loading}
+                            autoComplete="email"
                         />
                     </div>
                     <div>
@@ -77,16 +134,17 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                            disabled={isLoading}
+                            disabled={loading}
+                            autoComplete="new-password"
                         />
                     </div>
                     <div className="flex items-center justify-between">
                         <button
                             type="submit"
-                            className={`py-2 px-4 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg max-w-md ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            disabled={isLoading}
+                            className={`py-2 px-4 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg max-w-md ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={loading}
                         >
-                            {isLoading ? (
+                            {loading ? (
                                 <>
                                     <svg width="20" height="20" fill="currentColor" className="mr-2 animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z">
