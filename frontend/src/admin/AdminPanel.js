@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
-import { showErrorToast } from '../redux/toastAction';
+import { showErrorToast, showSuccessToast } from '../redux/toastAction';
 import { 
   FaUsers, 
   FaShoppingCart, 
@@ -18,18 +18,22 @@ import {
   FaTimes
 } from 'react-icons/fa';
 
+// Import admin page components
+import Dashboard from './pages/Dashboard';
+import Products from './pages/Products';
+
 const AdminPanel = () => {
     const [adminData, setAdminData] = useState(null);
     const [dashboardData, setDashboardData] = useState(null);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [loading, setLoading] = useState(true);
-    // Error handling now done via toast notifications
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [notifications, setNotifications] = useState([]);
+    
     const navigate = useNavigate();
 
     // API base URL from environment
-    const ADMIN_API_URL = process.env.REACT_APP_ADMIN_API_URL;
+    const ADMIN_API_URL = process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5000/api/admin';
 
     const logout = useCallback(() => {
         localStorage.removeItem('adminToken');
@@ -69,7 +73,6 @@ const AdminPanel = () => {
             if (error.response?.status === 401) {
                 logout();
             } else {
-                // Error handling now done via toast notifications
                 console.error('Failed to load dashboard data:', error);
             }
         } finally {
@@ -113,10 +116,48 @@ const AdminPanel = () => {
         { id: 'settings', label: 'Settings', icon: FaCog, color: 'text-gray-600' }
     ];
 
+    // Render content based on active tab
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'dashboard':
+                return <Dashboard dashboardData={dashboardData} />;
+            case 'products':
+                return <Products />;
+            case 'users':
+                return (
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Users Management</h2>
+                        <p className="text-gray-600">Manage user accounts and permissions.</p>
+                    </div>
+                );
+            case 'orders':
+                return (
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Orders Management</h2>
+                        <p className="text-gray-600">View and manage customer orders.</p>
+                    </div>
+                );
+            case 'payments':
+                return (
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Payment Management</h2>
+                        <p className="text-gray-600">Monitor payment transactions and refunds.</p>
+                    </div>
+                );
+            case 'settings':
+                return (
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">System Settings</h2>
+                        <p className="text-gray-600">Configure system preferences and settings.</p>
+                    </div>
+                );
+            default:
+                return <Dashboard dashboardData={dashboardData} />;
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Error messages handled by toast notifications */}
-            
             {/* Top Navigation Bar */}
             <nav className="bg-white shadow-sm border-b border-gray-200">
                 <div className="px-4 sm:px-6 lg:px-8">
@@ -227,162 +268,7 @@ const AdminPanel = () => {
                 {/* Main Content */}
                 <div className="flex-1 lg:ml-0">
                     <main className="p-6">
-                        {/* Error messages now handled by toast notifications */}
-
-                        {/* Dashboard Content */}
-                        {activeTab === 'dashboard' && (
-                            <div className="space-y-6">
-                                {/* Welcome Section */}
-                                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-                                    <h2 className="text-2xl font-bold mb-2">Welcome back, {adminData.username}! 👋</h2>
-                                    <p className="text-blue-100">Here's what's happening with your store today.</p>
-                                </div>
-
-                                {/* Stats Grid */}
-                                {dashboardData && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                                            <div className="flex items-center">
-                                                <div className="p-3 bg-blue-100 rounded-lg">
-                                                    <FaUsers className="text-blue-600" size={24} />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                                                    <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.totalUsers}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                                            <div className="flex items-center">
-                                                <div className="p-3 bg-green-100 rounded-lg">
-                                                    <FaShoppingCart className="text-green-600" size={24} />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                                                    <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.totalCarts}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                                            <div className="flex items-center">
-                                                <div className="p-3 bg-purple-100 rounded-lg">
-                                                    <FaCreditCard className="text-purple-600" size={24} />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <p className="text-sm font-medium text-gray-600">Payment Methods</p>
-                                                    <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.totalPaymentMethods}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                                            <div className="flex items-center">
-                                                <div className="p-3 bg-orange-100 rounded-lg">
-                                                    <FaBox className="text-orange-600" size={24} />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <p className="text-sm font-medium text-gray-600">Products</p>
-                                                    <p className="text-2xl font-bold text-gray-900">24</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Recent Activity */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    {/* Recent Users */}
-                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                                        <div className="px-6 py-4 border-b border-gray-200">
-                                            <h3 className="text-lg font-medium text-gray-900">Recent Users</h3>
-                                        </div>
-                                        <div className="p-6">
-                                            {dashboardData?.recentUsers?.map((user, index) => (
-                                                <div key={index} className="flex items-center py-3 border-b border-gray-100 last:border-b-0">
-                                                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                                                        <span className="text-gray-600 text-sm font-medium">
-                                                            {user.username.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="ml-3 flex-1">
-                                                        <p className="text-sm font-medium text-gray-900">{user.username}</p>
-                                                        <p className="text-sm text-gray-500">{user.email}</p>
-                                                    </div>
-                                                    <span className="text-xs text-gray-400">
-                                                        {new Date(user.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Recent Orders */}
-                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                                        <div className="px-6 py-4 border-b border-gray-200">
-                                            <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
-                                        </div>
-                                        <div className="p-6">
-                                            {dashboardData?.recentCarts?.map((cart, index) => (
-                                                <div key={index} className="flex items-center py-3 border-b border-gray-100 last:border-b-0">
-                                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                        <FaShoppingCart className="text-blue-600" size={16} />
-                                                    </div>
-                                                    <div className="ml-3 flex-1">
-                                                        <p className="text-sm font-medium text-gray-900">
-                                                            Order #{cart._id.slice(-6)}
-                                                        </p>
-                                                        <p className="text-sm text-gray-500">
-                                                            {cart.userId?.username || 'Unknown User'}
-                                                        </p>
-                                                    </div>
-                                                    <span className="text-xs text-gray-400">
-                                                        {new Date(cart.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Other Tab Content */}
-                        {activeTab === 'users' && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Users Management</h2>
-                                <p className="text-gray-600">Manage user accounts and permissions.</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'orders' && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Orders Management</h2>
-                                <p className="text-gray-600">View and manage customer orders.</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'products' && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Products Management</h2>
-                                <p className="text-gray-600">Manage product catalog and inventory.</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'payments' && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Payment Management</h2>
-                                <p className="text-gray-600">Monitor payment transactions and refunds.</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'settings' && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">System Settings</h2>
-                                <p className="text-gray-600">Configure system preferences and settings.</p>
-                            </div>
-                        )}
+                        {renderContent()}
                     </main>
                 </div>
             </div>

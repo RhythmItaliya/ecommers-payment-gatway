@@ -15,6 +15,12 @@ router.put('/users/:userId/status', verifyAdminToken, checkPermission('users'), 
 // Orders Management API (protected)
 router.get('/orders', verifyAdminToken, checkPermission('orders'), adminController.getOrders);
 
+// Product Management API (protected)
+router.get('/products', verifyAdminToken, checkPermission('products'), adminController.getProducts);
+router.post('/products', verifyAdminToken, checkPermission('products'), adminController.createProduct);
+router.put('/products/:productId', verifyAdminToken, checkPermission('products'), adminController.updateProduct);
+router.delete('/products/:productId', verifyAdminToken, checkPermission('products'), adminController.deleteProduct);
+
 // System Settings API (protected)
 router.get('/settings', verifyAdminToken, checkPermission('settings'), adminController.getSettings);
 

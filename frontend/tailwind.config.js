@@ -2,7 +2,9 @@ module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     fontFamily: {
-      primary: 'Poppins',
+      sans: ['League Spartan', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      primary: ['League Spartan', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      body: ['League Spartan', 'ui-sans-serif', 'system-ui', 'sans-serif'],
     },
     container: {
       padding: {
@@ -24,6 +26,9 @@ module.exports = {
       },
       backgroundImage: {
         hero: "url('./img/bghero.jpg')",
+      },
+      fontFamily: {
+        spartan: ['League Spartan', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

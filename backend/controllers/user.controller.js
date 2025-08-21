@@ -1,5 +1,5 @@
 require('dotenv').config();
-const stripe = require('stripe')(process.env.STRIPE_KEY);
+const stripe = require('stripe')(require('../config/config').stripe.key);
 const User = require("../models/user.model")
 const bcrypt = require('bcrypt')
 const jwtService = require('../services/jwt.service');

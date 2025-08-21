@@ -1,6 +1,8 @@
 const User = require('../models/user.model');
 const Cart = require('../models/cart.model');
 const PaymentMethod = require('../models/paymentMethod.model');
+const Product = require('../models/product.model');
+const config = require('../config/config');
 
 // Admin Dashboard API
 const getDashboard = async (req, res) => {
@@ -9,6 +11,7 @@ const getDashboard = async (req, res) => {
         const totalUsers = await User.countDocuments();
         const totalCarts = await Cart.countDocuments();
         const totalPaymentMethods = await PaymentMethod.countDocuments();
+        const totalProducts = await Product.countDocuments();
 
         // Get recent users
         const recentUsers = await User.find()
@@ -22,16 +25,24 @@ const getDashboard = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5);
 
+        // Get recent products
+        const recentProducts = await Product.find()
+            .select('title price category createdAt')
+            .sort({ createdAt: -1 })
+            .limit(5);
+
         res.json({
             success: true,
             data: {
                 stats: {
                     totalUsers,
                     totalCarts,
-                    totalPaymentMethods
+                    totalPaymentMethods,
+                    totalProducts
                 },
                 recentUsers,
-                recentCarts
+                recentCarts,
+                recentProducts
             }
         });
     } catch (error) {
@@ -154,6 +165,136 @@ const getOrders = async (req, res) => {
     }
 };
 
+// Product Management API
+const getProducts = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const products = await Product.find()
+            .select('id title name price category stock createdAt')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalProducts = await Product.countDocuments();
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        res.json({
+            success: true,
+            data: {
+                products,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalProducts,
+                    limit,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Get products error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load products'
+        });
+    }
+};
+
+const createProduct = async (req, res) => {
+    try {
+        const productData = req.body;
+        
+        // Generate unique ID
+        const lastProduct = await Product.findOne().sort({ id: -1 });
+        productData.id = lastProduct ? lastProduct.id + 1 : 1;
+        
+        // Ensure required fields
+        if (!productData.title || !productData.price || !productData.category) {
+            return res.status(400).json({
+                success: false,
+                message: 'Title, price, and category are required'
+            });
+        }
+
+        const product = new Product(productData);
+        await product.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Product created successfully',
+            data: product
+        });
+    } catch (error) {
+        console.error('Create product error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create product'
+        });
+    }
+};
+
+const updateProduct = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const updateData = req.body;
+
+        const product = await Product.findByIdAndUpdate(
+            productId,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Product updated successfully',
+            data: product
+        });
+    } catch (error) {
+        console.error('Update product error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update product'
+        });
+    }
+};
+
+const deleteProduct = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        
+        const product = await Product.findByIdAndDelete(productId);
+        
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Product deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete product error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete product'
+        });
+    }
+};
+
 // System Settings API
 const getSettings = async (req, res) => {
     try {
@@ -161,11 +302,11 @@ const getSettings = async (req, res) => {
             success: true,
             data: {
                 env: {
-                    NODE_ENV: process.env.NODE_ENV || 'development',
-                    PORT: process.env.PORT || 8000,
-                    MONGODB_URI: process.env.MONGODB_URI ? 'Configured' : 'Not Configured',
-                    RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID ? 'Configured' : 'Not Configured',
-                    STRIPE_KEY: process.env.STRIPE_KEY ? 'Configured' : 'Not Configured'
+                    NODE_ENV: config.nodeEnv,
+                    PORT: config.port,
+                    MONGODB_URI: config.mongoUri ? 'Configured' : 'Not Configured',
+                    RAZORPAY_KEY_ID: config.razorpay.keyId ? 'Configured' : 'Not Configured',
+                    STRIPE_KEY: config.stripe.key ? 'Configured' : 'Not Configured'
                 }
             }
         });
@@ -211,6 +352,10 @@ module.exports = {
     getUsers,
     getUserDetails,
     getOrders,
+    getProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
     getSettings,
     deleteUser,
     updateUserStatus

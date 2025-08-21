@@ -1,5 +1,6 @@
 const Admin = require('../models/admin.model');
 const jwt = require('jsonwebtoken');
+const config = require('../config/config');
 
 // Admin Login
 const adminLogin = async (req, res) => {
@@ -60,7 +61,7 @@ const adminLogin = async (req, res) => {
         await admin.save();
 
         // Generate JWT token
-        const secret = process.env.ACCESS_TOKEN_SECRET || 'admin_secret_ke';
+        const secret = config.jwtSecret;
         
         const token = jwt.sign(
             { 
@@ -102,17 +103,11 @@ const createDefaultAdmin = async () => {
         
         if (adminCount === 0) {
             const defaultAdmin = new Admin({
-                username: process.env.ADMIN_USERNAME || 'admin',
-                email: process.env.ADMIN_EMAIL || 'admin@snapshop.com',
-                password: process.env.ADMIN_PASSWORD || 'admin123',
-                role: process.env.ADMIN_ROLE || 'super_admin',
-                permissions: {
-                    users: process.env.ADMIN_PERMISSION_USERS !== 'false',
-                    orders: process.env.ADMIN_PERMISSION_ORDERS !== 'false',
-                    products: process.env.ADMIN_PERMISSION_PRODUCTS !== 'false',
-                    payments: process.env.ADMIN_PERMISSION_PAYMENTS !== 'false',
-                    settings: process.env.ADMIN_PERMISSION_SETTINGS !== 'false'
-                }
+                        username: config.admin.username,
+        email: config.admin.email,
+        password: config.admin.password,
+        role: config.admin.role,
+        permissions: config.admin.permissions
             });
 
             await defaultAdmin.save();
@@ -138,7 +133,7 @@ const verifyAdminToken = async (req, res, next) => {
             });
         }
 
-        const secret = process.env.ACCESS_TOKEN_SECRET || 'admin_secret_key';
+        const secret = config.jwtSecret;
         const decoded = jwt.verify(token, secret);
         
         req.admin = decoded;
@@ -180,17 +175,11 @@ const checkPermission = (permission) => {
 // Get admin configuration status
 const getAdminConfig = () => {
     return {
-        username: process.env.ADMIN_USERNAME || 'admin',
-        email: process.env.ADMIN_EMAIL || 'admin@snapshop.com',
-        password: process.env.ADMIN_PASSWORD ? '✅ Set' : '❌ Not set (using default: admin123)',
-        role: process.env.ADMIN_ROLE || 'super_admin',
-        permissions: {
-            users: process.env.ADMIN_PERMISSION_USERS !== 'false',
-            orders: process.env.ADMIN_PERMISSION_ORDERS !== 'false',
-            products: process.env.ADMIN_PERMISSION_PRODUCTS !== 'false',
-            payments: process.env.ADMIN_PERMISSION_PAYMENTS !== 'false',
-            settings: process.env.ADMIN_PERMISSION_SETTINGS !== 'false'
-        }
+        username: config.admin.username,
+        email: config.admin.email,
+        password: config.admin.password ? '✅ Set' : '❌ Not set (using default: admin123)',
+        role: config.admin.role,
+        permissions: config.admin.permissions
     };
 };
 

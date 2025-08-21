@@ -10,9 +10,20 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  name: {
+    type: String,
+    required: true
+  },
   price: {
     type: Number,
     required: true
+  },
+  discount: {
+    type: Number,
+    default: 0
+  },
+  salePrice: {
+    type: Number
   },
   description: {
     type: String,
@@ -26,6 +37,13 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  pictures: [{
+    type: String
+  }],
+  stock: {
+    type: Number,
+    default: 0
+  },
   rating: {
     rate: {
       type: Number,
@@ -35,7 +53,16 @@ const productSchema = new mongoose.Schema({
       type: Number,
       default: 0
     }
-  }
+  },
+  tags: [{
+    type: String
+  }],
+  size: [{
+    type: String
+  }],
+  colors: [{
+    type: String
+  }]
 }, {
   timestamps: true
 });

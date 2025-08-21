@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'League Spartan';
+  src: url('../public/fonts/League_Spartan/LeagueSpartan-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -33,5 +41,10 @@
 @layer base {
   body {
     @apply font-primary text-primary;
+    font-family: 'League Spartan', ui-sans-serif, system-ui, sans-serif;
+  }
+  
+  * {
+    font-family: 'League Spartan', ui-sans-serif, system-ui, sans-serif;
   }
 }

@@ -1,5 +1,5 @@
 const express = require('express');
-const { attachPaymentMethod, addCardToCustomer, getCardInfo, checkOutCard } = require('../controllers/stripe.conroller');
+const { attachPaymentMethod, addCardToCustomer, getCardInfo, checkOutCard } = require('../controllers/stripe.controller');
 
 const stripeRouter = express.Router();
 
