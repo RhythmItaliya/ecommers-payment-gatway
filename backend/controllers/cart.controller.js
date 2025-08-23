@@ -2,6 +2,21 @@ const Cart = require('../models/cart.model');
 const Product = require('../models/product.model');
 const mongoose = require('mongoose');
 
+// Helper function to find product by ID
+const findProductById = async (productId) => {
+  // First try to find by id field (numeric)
+  let product = await Product.findOne({ id: parseInt(productId) });
+  
+  if (!product) {
+    // Try to find by _id if the productId is an ObjectId
+    if (mongoose.Types.ObjectId.isValid(productId)) {
+      product = await Product.findById(productId);
+    }
+  }
+  
+  return product;
+};
+
 // Get user's cart
 const getUserCart = async (req, res) => {
   try {
@@ -15,9 +30,33 @@ const getUserCart = async (req, res) => {
       await cart.save();
     }
     
+    // Transform the data to match frontend expectations and ensure price is available
+    const transformedItems = cart.items.map(item => {
+      const product = item.productId;
+      return {
+        _id: item._id,
+        productId: product, // This will be the populated product
+        quantity: item.quantity,
+        price: item.price, // Use the stored price from cart item
+        addedAt: item.addedAt
+      };
+    });
+    
+    console.log('Cart data being sent:', {
+      items: transformedItems.map(item => ({
+        _id: item._id,
+        productTitle: item.productId?.title,
+        quantity: item.quantity,
+        storedPrice: item.price,
+        productPrice: item.productId?.price
+      })),
+      totalQuantity: cart.totalQuantity,
+      totalAmount: cart.totalAmount
+    });
+    
     res.json({
       success: true,
-      data: cart.items,
+      data: transformedItems,
       totalQuantity: cart.totalQuantity,
       totalAmount: cart.totalAmount
     });
@@ -44,14 +83,8 @@ const addToCart = async (req, res) => {
       });
     }
     
-    // Validate product exists - first try to find by id field, then by _id
-    let product = await Product.findOne({ id: parseInt(productId) });
-    if (!product) {
-      // Try to find by _id if the productId is an ObjectId
-      if (mongoose.Types.ObjectId.isValid(productId)) {
-        product = await Product.findById(productId);
-      }
-    }
+    // Find product using helper function
+    const product = await findProductById(productId);
     
     if (!product) {
       return res.status(404).json({
@@ -59,6 +92,13 @@ const addToCart = async (req, res) => {
         message: 'Product not found'
       });
     }
+    
+    console.log('Adding product to cart:', {
+      productId: product._id,
+      productTitle: product.title,
+      productPrice: product.price,
+      quantity
+    });
     
     let cart = await Cart.findOne({ userId });
     
@@ -75,13 +115,16 @@ const addToCart = async (req, res) => {
     if (existingItem) {
       // Update quantity if product already exists
       existingItem.quantity += quantity;
+      console.log('Updated existing item quantity:', existingItem.quantity);
     } else {
       // Add new product to cart
-      cart.items.push({
+      const newItem = {
         productId: product._id,
         quantity,
         price: product.price
-      });
+      };
+      cart.items.push(newItem);
+      console.log('Added new item to cart:', newItem);
     }
     
     await cart.save();
@@ -89,10 +132,33 @@ const addToCart = async (req, res) => {
     // Populate product details
     await cart.populate('items.productId');
     
+    // Transform the data to match frontend expectations
+    const transformedItems = cart.items.map(item => {
+      const product = item.productId;
+      return {
+        _id: item._id,
+        productId: product, // This will be the populated product
+        quantity: item.quantity,
+        price: item.price, // Use the stored price from cart item
+        addedAt: item.addedAt
+      };
+    });
+    
+    console.log('Final cart data:', {
+      items: transformedItems.map(item => ({
+        _id: item._id,
+        productTitle: item.productId?.title,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      totalQuantity: cart.totalQuantity,
+      totalAmount: cart.totalAmount
+    });
+    
     res.json({
       success: true,
       message: 'Product added to cart',
-      data: cart.items,
+      data: transformedItems,
       totalQuantity: cart.totalQuantity,
       totalAmount: cart.totalAmount
     });
@@ -136,14 +202,8 @@ const updateCartItemQuantity = async (req, res) => {
       });
     }
     
-    // First try to find product by id field, then by _id
-    let product = await Product.findOne({ id: parseInt(productId) });
-    if (!product) {
-      // Try to find by _id if the productId is an ObjectId
-      if (mongoose.Types.ObjectId.isValid(productId)) {
-        product = await Product.findById(productId);
-      }
-    }
+    // Find product using helper function
+    const product = await findProductById(productId);
     
     if (!product) {
       return res.status(404).json({
@@ -170,10 +230,22 @@ const updateCartItemQuantity = async (req, res) => {
     // Populate product details
     await cart.populate('items.productId');
     
+    // Transform the data to match frontend expectations
+    const transformedItems = cart.items.map(item => {
+      const product = item.productId;
+      return {
+        _id: item._id,
+        productId: product, // This will be the populated product
+        quantity: item.quantity,
+        price: item.price, // Use the stored price from cart item
+        addedAt: item.addedAt
+      };
+    });
+    
     res.json({
       success: true,
       message: 'Cart item quantity updated',
-      data: cart.items,
+      data: transformedItems,
       totalQuantity: cart.totalQuantity,
       totalAmount: cart.totalAmount
     });
@@ -209,14 +281,8 @@ const removeFromCart = async (req, res) => {
       });
     }
     
-    // First try to find product by id field, then by _id
-    let product = await Product.findOne({ id: parseInt(productId) });
-    if (!product) {
-      // Try to find by _id if the productId is an ObjectId
-      if (mongoose.Types.ObjectId.isValid(productId)) {
-        product = await Product.findById(productId);
-      }
-    }
+    // Find product using helper function
+    const product = await findProductById(productId);
     
     if (!product) {
       return res.status(404).json({
@@ -235,10 +301,22 @@ const removeFromCart = async (req, res) => {
     // Populate product details
     await cart.populate('items.productId');
     
+    // Transform the data to match frontend expectations
+    const transformedItems = cart.items.map(item => {
+      const product = item.productId;
+      return {
+        _id: item._id,
+        productId: product, // This will be the populated product
+        quantity: item.quantity,
+        price: item.price, // Use the stored price from cart item
+        addedAt: item.addedAt
+      };
+    });
+    
     res.json({
       success: true,
       message: 'Product removed from cart',
-      data: cart.items,
+      data: transformedItems,
       totalQuantity: cart.totalQuantity,
       totalAmount: cart.totalAmount
     });

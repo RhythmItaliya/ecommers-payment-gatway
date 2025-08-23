@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchWishlist, clearWishlist } from '../redux/wishlistAction';
-import { addToCart } from '../redux/cartAction';
-import { BsHeart, BsBag, BsTrash } from 'react-icons/bs';
+import { BsHeart, BsTrash } from 'react-icons/bs';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ProductCard from '../components/ProductCard';
+import { formatINRPrice } from '../utils/currency';
 
 const Wishlist = () => {
   const dispatch = useDispatch();
@@ -15,10 +16,6 @@ const Wishlist = () => {
       dispatch(fetchWishlist());
     }
   }, [dispatch, isLoggedIn, user]);
-
-  const handleAddToCart = (product) => {
-    dispatch(addToCart({ productId: product.id, quantity: 1 }));
-  };
 
   const handleClearWishlist = async () => {
     if (window.confirm('Are you sure you want to clear your wishlist?')) {
@@ -86,62 +83,39 @@ const Wishlist = () => {
             <p className="text-gray-500 mb-6">Start adding products you love to your wishlist!</p>
             <button
               onClick={() => window.history.back()}
-              className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors duration-200"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
             >
               Continue Shopping
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {wishlistItems.map((item) => (
-              <div key={item.product.id} className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
-                {/* Product Image */}
-                <div className="relative">
-                  <img
-                    src={item.product.image}
-                    alt={item.product.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-3 right-3">
+            {wishlistItems.map((item) => {
+              // Handle both data structures: item.productId and item.product
+              const product = item.productId || item.product;
+              if (!product) return null; // Skip if no product data
+              
+              return (
+                <div key={item._id || item.id} className="relative">
+                  {/* Wishlist Badge */}
+                  <div className="absolute top-2 left-2 z-10">
                     <div className="bg-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                       WISHLIST
                     </div>
                   </div>
-                </div>
-
-                {/* Product Info */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2 truncate" title={item.product.title}>
-                    {item.product.title}
-                  </h3>
                   
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-bold text-primary">
-                      ${item.product.price}
-                    </span>
-                    <span className="text-sm text-gray-500 capitalize">
-                      {item.product.category}
-                    </span>
+                  {/* Added Date Badge */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded-full opacity-90">
+                      {new Date(item.addedAt).toLocaleDateString()}
+                    </div>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleAddToCart(item.product)}
-                      className="flex-1 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors duration-200 flex items-center justify-center gap-2"
-                    >
-                      <BsBag className="w-4 h-4" />
-                      Add to Cart
-                    </button>
-                  </div>
-
-                  {/* Added Date */}
-                  <p className="text-xs text-gray-400 mt-3 text-center">
-                    Added {new Date(item.addedAt).toLocaleDateString()}
-                  </p>
+                  
+                  {/* Product Card */}
+                  <ProductCard product={product} />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -58,9 +58,9 @@ const FeaturedCollection = () => {
                 <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-30 transition-all duration-300"></div>
                 
                 {/* Content */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-between">
+                <div className="absolute inset-0 p-6 flex flex-col justify-center items-center text-center">
                   {/* Top Section - Tag */}
-                  <div className="flex items-center">
+                  <div className="flex items-center mb-4">
                     <div className={`w-8 h-0.5 ${collection.accentColor} mr-3`}></div>
                     <span className="text-white text-xs font-semibold tracking-wider uppercase">
                       {collection.tag}
@@ -68,7 +68,7 @@ const FeaturedCollection = () => {
                   </div>
 
                   {/* Middle Section - Title & Subtitle */}
-                  <div className="text-center">
+                  <div className="mb-4">
                     <h3 className="text-white text-2xl md:text-3xl font-bold uppercase mb-2 leading-tight">
                       {collection.title}
                     </h3>
@@ -78,7 +78,7 @@ const FeaturedCollection = () => {
                   </div>
 
                   {/* Bottom Section - CTA Button */}
-                  <div className="text-center">
+                  <div>
                     <Link 
                       to={collection.link}
                       className="inline-block text-white font-semibold uppercase text-sm tracking-wider relative group/btn"

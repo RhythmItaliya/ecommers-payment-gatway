@@ -1,60 +1,41 @@
-import React, { useContext, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartAction";
-import { ProductContext } from "../contexts/ProductContext";
+import { formatINRPrice } from "../utils/currency";
 
 const ProductDetails = () => {
-  // get the product id from url
-  const { id } = useParams();
-  const dispatch = useDispatch();
-  const { products } = useContext(ProductContext);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
-  // Try to find product from context first, then fetch from API if not found
   useEffect(() => {
-    const findProduct = async () => {
-      // First try to find in context
-      let foundProduct = products.find((item) => item.id === parseInt(id));
-      
-      if (foundProduct) {
-        setProduct(foundProduct);
-        setLoading(false);
-        return;
-      }
-
-      // If not found in context, fetch from API
+    const fetchProduct = async () => {
       try {
-        setLoading(true);
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-        const response = await fetch(`${apiUrl}/products/${id}`);
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.error || 'Product not found');
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        if (data.success) {
+          setProduct(data.products[0]); // Get first product for demo
+        } else {
+          setError('Failed to fetch product');
         }
-        
-        setProduct(result.data);
-      } catch (error) {
-        console.error('Error fetching product:', error);
-        setError(error.message);
+      } catch (err) {
+        setError('Error fetching product');
       } finally {
         setLoading(false);
       }
     };
 
-    findProduct();
-  }, [id, products]);
+    fetchProduct();
+  }, []);
 
   // Loading state
   if (loading) {
     return (
       <section className="h-screen flex justify-center items-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading product...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
         </div>
       </section>
     );
@@ -90,7 +71,11 @@ const ProductDetails = () => {
   const { title, price, description, image, discount, salePrice, stock, category } = product;
   
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
+    // Use the correct product ID for cart operations
+    const productId = product.id || product._id;
+    if (productId) {
+      dispatch(addToCart({ productId, quantity: 1 }));
+    }
   };
   
   return (
@@ -113,14 +98,14 @@ const ProductDetails = () => {
             <div className="mb-6">
               {discount > 0 ? (
                 <div className="flex items-center gap-3 justify-center lg:justify-start">
-                  <span className="text-2xl text-red-500 font-medium">${salePrice}</span>
-                  <span className="text-lg text-gray-400 line-through">${price}</span>
+                  <span className="text-2xl text-red-500 font-medium">{formatINRPrice(salePrice)}</span>
+                  <span className="text-lg text-gray-400 line-through">{formatINRPrice(price)}</span>
                   <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                    -${discount} off
+                    -{formatINRPrice(discount)} off
                   </span>
                 </div>
               ) : (
-                <div className="text-2xl text-red-500 font-medium">${price}</div>
+                <div className="text-2xl text-red-500 font-medium">{formatINRPrice(price)}</div>
               )}
             </div>
 

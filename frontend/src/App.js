@@ -18,7 +18,6 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Checkout from "./card/Checkout";
 import SuccessPage from "./pages/SuccessPage";
-import AdminPanel from "./admin/AdminPanel";
 
 const stripePromise = loadStripe('pk_test_51ORpDXSJivXBSgor7CxOo2rbwC8nhsIfwqxlxb76hPtuTzY4z2we4yK30AnBGsFbalURavuyqsk8obBmYRd7ZA8d00UPnsjnGY')
 
@@ -31,25 +30,18 @@ const App = () => {
             <Elements stripe={stripePromise}>
               <Router>
                 <div className="min-h-screen bg-gray-50">
+                  <Header />
                   <Routes>
-                    <Route path="/admin" element={<AdminPanel />} />
-                    <Route path="/*" element={
-                      <>
-                        <Header />
-                        <Routes>
-                          <Route path="/" element={<Home />} />
-                          <Route path="/products" element={<Products />} />
-                          <Route path="/product/:id" element={<ProductDetails />} />
-                          <Route path="/wishlist" element={<Wishlist />} />
-                          <Route path="/profile" element={<UserProfile />} />
-                          <Route path="/checkout" element={<Checkout />} />
-                          <Route path="/success" element={<SuccessPage />} />
-                        </Routes>
-                        <Sidebar />
-                        <Footer />
-                      </>
-                    } />
+                    <Route path="/" element={<Home />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/product/:id" element={<ProductDetails />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/profile" element={<UserProfile />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/success" element={<SuccessPage />} />
                   </Routes>
+                  <Sidebar />
+                  <Footer />
                 </div>
               </Router>
             </Elements>

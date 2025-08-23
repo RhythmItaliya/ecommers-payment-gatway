@@ -9,6 +9,7 @@ import CheckOutItem from './CheckOutItem';
 import ExitCard from './ExitCard';
 import { AddCard } from './AddCard';
 import RazorpayPayment from './RazorpayPayment';
+import { formatINRPrice, convertUSDToINR } from '../utils/currency';
 
 export const Checkout = () => {
     const [selectedCard, setSelectedCard] = useState(null);
@@ -31,17 +32,19 @@ export const Checkout = () => {
     const handlePayment = async () => {
         if (!stripe || !elements || !selectedCard) {
             console.log('Error: Stripe, elements, or selected card is not initialized.');
-            // setError('Please complete the payment information.'); // This line was removed
-
             return;
         }
+        
+        // Convert INR to USD for Stripe (Stripe expects amounts in cents)
+        const usdAmount = await convertUSDToINR(total);
+        const amountInCents = Math.round(parseFloat(usdAmount) * 100);
+        
         const payload = {
             payment_method_id: selectedCard.id,
-            amount: total
+            amount: amountInCents
         };
         console.log('Payment payload:', payload);
         setLoading(true);
-        // setError(null); // This line was removed
         try {
             const response = await checkOut(payload);
             console.log('Payment successful!');
@@ -53,10 +56,8 @@ export const Checkout = () => {
             if (error.response && error.response.data) {
                 console.log(`Error message: ${error.response.data.message}`);
                 console.log('Full error details:', error.response.data);
-                // setError(`Payment failed: ${error.response.data.message}`); // This line was removed
             } else {
                 console.log('An unexpected error occurred:', error.message);
-                // setError(`Payment failed: ${error.message}`); // This line was removed
             }
         } finally {
             setLoading(false);
@@ -78,17 +79,24 @@ export const Checkout = () => {
             if (error.response && error.response.data) {
                 console.log('Error message:', error.response.data.message);
                 console.log('Error details:', error.response.data);
-                // setError(`Payment processing error: ${error.response.data.message}`); // This line was removed
             } else {
                 console.log('Error message:', error.message);
-                // setError(`Payment processing error: ${error.message}`); // This line was removed
             }
             throw error;
         }
     };
 
+    const handleRemoveFromCart = (item) => {
+        // Handle both data structures: item.productId and item.product
+        const product = item.productId || item.product;
+        if (product) {
+            const productId = product.id || product._id;
+            dispatch(removeFromCart(productId));
+        }
+    };
+
     return (
-        <div className="flex items-center justify-center min-h-screen mt-24 shadow-md rounded-lg bg-gray-100 p-6">
+        <div className="flex items-center justify-center min-h-screen shadow-md rounded-lg bg-gray-100 p-6">
             <div className="flex flex-col lg:flex-row w-full max-w-6xl bg-white shadow-lg rounded-lg overflow-hidden">
                 {/* Product Details Section */}
                 <div className="w-full lg:w-1/2 p-6 border-b lg:border-b-0 lg:border-r border-gray-200">
@@ -98,10 +106,10 @@ export const Checkout = () => {
                     ) : (
                         <ul className="h-[360px] md:h-[480px] lg:h-[420px] overflow-y-auto overflow-x-hidden border-b">
                             {cart.map((item) => (
-                                <div className="relative flex items-center" key={item.id}>
+                                <div className="relative flex items-center" key={item._id || item.id}>
                                     <CheckOutItem item={item} />
                                     <div
-                                        onClick={() => dispatch(removeFromCart(item.id))}
+                                        onClick={() => handleRemoveFromCart(item)}
                                         className="absolute top-0 right-0 p-2 text-xl cursor-pointer"
                                     >
                                         <IoMdClose className="text-gray-500 hover:text-red-500 transition" />
@@ -111,7 +119,7 @@ export const Checkout = () => {
                         </ul>
 
                     )}
-                    <div className="mt-4 font-semibold">Total: ${parseFloat(total).toFixed(2)}</div>
+                    <div className="mt-4 font-semibold">Total: {formatINRPrice(total)}</div>
                 </div>
 
                 {/* Payment Info Section */}
@@ -132,7 +140,7 @@ export const Checkout = () => {
                                     onChange={() => setPaymentGateway('razorpay')}
                                     className="form-radio text-blue-500"
                                 />
-                                <span className="ml-2">Razorpay</span>
+                                <span className="ml-2">Razorpay (INR)</span>
                             </label>
                             <label className="inline-flex items-center">
                                 <input
@@ -143,7 +151,7 @@ export const Checkout = () => {
                                     onChange={() => setPaymentGateway('stripe')}
                                     className="form-radio text-blue-500"
                                 />
-                                <span className="ml-2">Stripe</span>
+                                <span className="ml-2">Stripe (USD)</span>
                             </label>
                         </div>
 
@@ -197,16 +205,7 @@ export const Checkout = () => {
                                             className={`bg-primary flex p-3 justify-center items-center text-white w-full font-medium mt-3 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             disabled={loading}
                                         >
-                                            {loading ? (
-                                                <>
-                                                    <svg width="20" height="20" fill="currentColor" className="mr-2 animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z" />
-                                                    </svg>
-                                                    Processing...
-                                                </>
-                                            ) : (
-                                                'Pay'
-                                            )}
+                                            {loading ? 'Processing...' : 'Pay Now'}
                                         </button>
                                     </div>
                                 </>

@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { clearCart } from '../redux/cartAction';
 import { useNavigate } from 'react-router-dom';
 import { showErrorToast } from '../redux/toastAction';
+import { formatINRPrice } from '../utils/currency';
 import axios from 'axios';
 
 const RazorpayPayment = () => {
@@ -15,10 +16,10 @@ const RazorpayPayment = () => {
     const token = useSelector(state => state.auth.token);
 
     // Razorpay Configuration
-    const RAZORPAY_KEY = "rzp_test_t8qeVD7fsffjfV";
-    const RAZORPAY_CURRENCY = "INR";
-    const RAZORPAY_NAME = "Snapshop";
-    const RAZORPAY_DESCRIPTION = "Snapshop Transaction";
+    const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
+    const RAZORPAY_CURRENCY = 'INR';
+    const RAZORPAY_NAME = process.env.REACT_APP_NAME || 'SnapShop';
+    const RAZORPAY_DESCRIPTION = process.env.REACT_APP_DESCRIPTION || 'Payment for your order';
 
     // Load Razorpay script
     useEffect(() => {
@@ -98,12 +99,7 @@ const RazorpayPayment = () => {
                         }
                     } catch (error) {
                         console.error('Payment verification error:', error);
-                        if (error.response?.data) {
-                            console.error('Error response:', error.response.data);
-                            dispatch(showErrorToast(error.response.data.message || 'Payment verification failed'));
-                        } else {
-                            dispatch(showErrorToast('Payment verification failed'));
-                        }
+                        dispatch(showErrorToast('Payment verification failed'));
                     }
                 },
                 prefill: {
@@ -111,88 +107,57 @@ const RazorpayPayment = () => {
                     email: 'customer@example.com',
                     contact: '9999999999'
                 },
-                notes: {
-                    address: 'Snapshop Address'
-                },
                 theme: {
                     color: '#3B82F6'
                 }
             };
 
             // Initialize Razorpay
-            const rzp = new window.Razorpay(options);
-            
-            // Handle modal events
-            rzp.on('payment.failed', function (response) {
-                console.error('Payment failed:', response.error);
-                dispatch(showErrorToast('Payment failed: ' + (response.error.description || response.error.message)));
-            });
-            
-            rzp.on('payment.cancelled', function () {
-                console.log('Payment cancelled by user');
-                dispatch(showErrorToast('Payment was cancelled'));
-            });
-            
-            rzp.open();
+            const razorpay = new window.Razorpay(options);
+            razorpay.open();
 
         } catch (error) {
             console.error('Razorpay payment error:', error);
-            dispatch(showErrorToast(error.response?.data?.message || error.message || 'Payment failed'));
+            dispatch(showErrorToast(error.message || 'Failed to initiate payment'));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="w-full">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                    Pay with Razorpay
-                </h3>
-                
-                <div className="mb-4">
-                    <p className="text-sm text-gray-600 mb-2">
-                        Total Amount: <span className="font-semibold text-lg text-primary">₹{total.toFixed(2)}</span>
-                    </p>
-                    <p className="text-xs text-gray-500">
-                        Secure payment powered by Razorpay
-                    </p>
+        <div className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+                <h5 className="font-medium text-blue-800 mb-2">Payment Summary</h5>
+                <div className="space-y-2 text-sm text-blue-700">
+                    <div className="flex justify-between">
+                        <span>Items in cart:</span>
+                        <span>{cart.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Total amount:</span>
+                        <span className="font-semibold">{formatINRPrice(total)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Currency:</span>
+                        <span className="font-semibold">INR (₹)</span>
+                    </div>
                 </div>
+            </div>
 
-                {/* Error messages handled by toast notifications */}
+            <button
+                onClick={handleRazorpayPayment}
+                disabled={loading || cart.length === 0}
+                className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                    loading || cart.length === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+            >
+                {loading ? 'Processing...' : `Pay ${formatINRPrice(total)} with Razorpay`}
+            </button>
 
-                <button
-                    onClick={handleRazorpayPayment}
-                    disabled={loading || cart.length === 0}
-                    className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
-                        loading || cart.length === 0
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                >
-                    {loading ? (
-                        <div className="flex items-center justify-center">
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Processing...
-                        </div>
-                    ) : (
-                        `Pay ₹${total.toFixed(2)}`
-                    )}
-                </button>
-
-                <div className="mt-4 text-center">
-                    <img 
-                        src="https://razorpay.com/favicon.png" 
-                        alt="Razorpay" 
-                        className="inline-block w-6 h-6 mr-2"
-                    />
-                    <span className="text-xs text-gray-500">
-                        Powered by Razorpay
-                    </span>
-                </div>
+            <div className="text-xs text-gray-500 text-center">
+                You will be redirected to Razorpay's secure payment gateway
             </div>
         </div>
     );

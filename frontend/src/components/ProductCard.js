@@ -3,24 +3,54 @@ import { useDispatch, useSelector } from "react-redux";
 import { BsHeart, BsBag } from "react-icons/bs";
 import { addToCart } from "../redux/cartAction";
 import { addToWishlist, removeFromWishlist } from "../redux/wishlistAction";
+import { formatINRPrice } from "../utils/currency";
 import Login from "../auth/Login";
+import Register from "../auth/Register";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   
   const { isLoggedIn } = useSelector(state => state.auth);
   const { items: wishlistItems } = useSelector(state => state.wishlist);
-  const isInWishlist = wishlistItems.some(item => item.productId?.id === product.id || item.productId === product.id);
+  
+  // Check if product is in wishlist by comparing product IDs
+  const isInWishlist = wishlistItems.some(item => {
+    // Handle both data structures: item.productId.id and item.productId
+    const itemProductId = item.productId?.id || item.productId;
+    return itemProductId === product.id || itemProductId === product._id;
+  });
 
   const handleAddToCart = () => {
     if (!isLoggedIn) return setShowLogin(true);
-    dispatch(addToCart({ productId: product.id, quantity: 1 }));
+    
+    // Use the correct product ID for cart operations
+    const productId = product.id || product._id;
+    if (productId) {
+      dispatch(addToCart({ productId, quantity: 1 }));
+    }
   };
 
   const handleWishlistToggle = () => {
     if (!isLoggedIn) return setShowLogin(true);
-    isInWishlist ? dispatch(removeFromWishlist(product.id)) : dispatch(addToWishlist(product.id));
+    
+    if (isInWishlist) {
+      // Find the wishlist item to get the correct ID for removal
+      const wishlistItem = wishlistItems.find(item => {
+        const itemProductId = item.productId?.id || item.productId;
+        return itemProductId === product.id || itemProductId === product._id;
+      });
+      
+      if (wishlistItem) {
+        // Use the product ID from the wishlist item for removal
+        const removeId = wishlistItem.productId?.id || wishlistItem.productId;
+        dispatch(removeFromWishlist(removeId));
+      }
+    } else {
+      const productId = product.id || product._id;
+      dispatch(addToWishlist(productId));
+    }
   };
 
   return (
@@ -31,7 +61,11 @@ const ProductCard = ({ product }) => {
           <img src={product.image} alt={product.title} className="w-full h-48 object-cover rounded-t-lg" />
           
           {/* Wishlist Button */}
-          <button onClick={handleWishlistToggle} className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50">
+          <button 
+            onClick={handleWishlistToggle} 
+            className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+            title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
             <BsHeart className={`w-4 h-4 ${isInWishlist ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
           </button>
 
@@ -48,7 +82,7 @@ const ProductCard = ({ product }) => {
           <h3 className="font-semibold text-gray-900 mb-2 truncate">{product.title}</h3>
           
           <div className="flex items-center justify-between mb-3">
-            <span className="text-lg font-bold text-blue-600">${product.price}</span>
+            <span className="text-lg font-bold text-blue-600">{formatINRPrice(product.price)}</span>
             <span className="text-sm text-gray-500 capitalize">{product.category}</span>
           </div>
 
@@ -73,7 +107,8 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Login Modal */}
-      {showLogin && <Login isOpen={showLogin} onClose={() => setShowLogin(false)} />}
+      {showLogin && <Login isOpen={showLogin} onClose={() => setShowLogin(false)} onRegisterClick={() => { setShowLogin(false); setShowRegister(true); }} />}
+      {showRegister && <Register isOpen={showRegister} onClose={() => setShowRegister(false)} onLoginClick={() => { setShowRegister(false); setShowLogin(true); }} />}
     </>
   );
 };

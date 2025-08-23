@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { CardCvcElement, CardExpiryElement } from '@stripe/react-stripe-js';
-
+import { formatINRPrice } from '../utils/currency';
 
 export const AddCard = () => {
     const stripe = useStripe();
@@ -85,7 +85,6 @@ export const AddCard = () => {
             setLoading(false);
         }
     };
-
 
     const addCardToCustomer = async (customer_id, card_token) => {
         try {

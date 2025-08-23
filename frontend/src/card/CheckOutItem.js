@@ -1,13 +1,21 @@
 import React from 'react';
+import { formatINRPrice } from '../utils/currency';
 
 const CheckOutItem = ({ item }) => {
-    const { title, image, price, quantity } = item;
+    // Handle both data structures: item.productId (populated product) and item.product
+    const product = item.productId || item.product;
+    
+    if (!product) {
+        return null; // Skip if no product data
+    }
+    
+    const { title, image, price, quantity } = product;
 
     return (
         <div className="flex gap-x-4 py-2 border-b border-gray-200 w-full font-light text-gray-500">
             <div className="w-full flex items-center gap-x-4">
                 {/* Image */}
-                <img className="max-w-[80px]" src={image} alt="" />
+                <img className="max-w-[80px]" src={image} alt={title} />
                 <div className="w-full flex flex-col">
                     {/* Title */}
                     <div className="flex justify-between mb-2">
@@ -20,11 +28,11 @@ const CheckOutItem = ({ item }) => {
                         </div>
                         {/* Item Price */}
                         <div className="flex items-center justify-center">
-                            $ {price}
+                            {formatINRPrice(price)}
                         </div>
                         {/* Final Price */}
                         <div className="flex items-center justify-end text-primary font-medium">
-                            ${parseFloat(price * quantity).toFixed(2)}
+                            {formatINRPrice(price * quantity)}
                         </div>
                     </div>
                 </div>

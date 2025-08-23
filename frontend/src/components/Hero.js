@@ -46,8 +46,8 @@ const Hero = () => {
       ))}
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 flex items-center h-full">
-        <div className="text-center text-white max-w-2xl">
+      <div className="relative z-10 container mx-auto px-4 flex items-center justify-center h-full">
+        <div className="text-center text-white max-w-2xl mx-auto">
           <div className="flex items-center justify-center mb-4">
             <div className="w-8 h-1 bg-blue-500 mr-3"></div>
             <span className="text-sm uppercase tracking-wide">{slides[currentSlide].tag}</span>

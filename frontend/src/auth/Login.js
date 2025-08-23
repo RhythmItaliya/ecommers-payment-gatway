@@ -33,28 +33,7 @@ const Login = ({ isOpen, onClose, onRegisterClick }) => {
         }
         
         try {
-            // First try admin login
-            try {
-                const adminResponse = await axios.post(`${process.env.REACT_APP_ADMIN_API_URL}/auth/login`, formData);
-                
-                if (adminResponse.data.success) {
-                    // Admin login successful
-                    localStorage.setItem('adminToken', adminResponse.data.token);
-                    localStorage.setItem('adminData', JSON.stringify(adminResponse.data.admin));
-                    onClose();
-                    navigate('/admin');
-                    return;
-                }
-            } catch (adminError) {
-                // Admin login failed, try regular user login
-                if (adminError.response?.status === 401) {
-                    // Continue to user login
-                } else {
-                    throw adminError;
-                }
-            }
-
-            // Try regular user login using Redux
+            // Regular user login using Redux
             const cleanFormData = {
                 username: formData.username.trim(),
                 password: formData.password

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Logo from "../img/logo.svg";
 import { BsBag, BsHeart, BsList, BsX, BsPerson } from "react-icons/bs";
 import Login from "../auth/Login";
@@ -14,6 +14,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const location = useLocation();
   
   const dispatch = useDispatch();
   const { isOpen, setIsOpen } = useContext(SidebarContext);
@@ -22,6 +23,16 @@ const Header = () => {
   const { totalItems: wishlistCount } = useSelector(state => state.wishlist);
 
   const navItems = ["Home", "Men", "Women", "New", "Sale"];
+
+  // Function to check if a nav item is active
+  const isActive = (item) => {
+    if (item === "Home" && location.pathname === "/") return true;
+    if (item === "Men" && location.pathname.includes("/men")) return true;
+    if (item === "Women" && location.pathname.includes("/women")) return true;
+    if (item === "New" && location.pathname.includes("/new")) return true;
+    if (item === "Sale" && location.pathname.includes("/sale")) return true;
+    return false;
+  };
 
   // Check auth status and fetch user data when component mounts
   useEffect(() => {
@@ -61,8 +72,15 @@ const Header = () => {
             {/* Desktop Nav */}
             <nav className="hidden md:flex space-x-6">
               {navItems.map(item => (
-                <Link key={item} to="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+                <Link key={item} to="/" className={`transition-colors relative group ${
+                  isActive(item) 
+                    ? 'text-blue-600' 
+                    : 'text-gray-600 hover:text-blue-600'
+                }`}>
                   {item}
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${
+                    isActive(item) ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </Link>
               ))}
             </nav>
@@ -80,11 +98,13 @@ const Header = () => {
               {/* Auth */}
               {!isLoggedIn ? (
                 <div className="hidden sm:flex space-x-3">
-                  <button onClick={() => setShowLogin(true)} className="text-gray-600 hover:text-blue-600">
+                  <button onClick={() => setShowLogin(true)} className="text-gray-600 hover:text-blue-600 relative group">
                     Sign In
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                   </button>
-                  <button onClick={() => setShowRegister(true)} className="text-gray-600 hover:text-blue-600">
+                  <button onClick={() => setShowRegister(true)} className="text-gray-600 hover:text-blue-600 relative group">
                     Sign Up
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                   </button>
                 </div>
               ) : (
@@ -121,17 +141,26 @@ const Header = () => {
             <div className="md:hidden py-4 border-t">
               <div className="space-y-3">
                 {navItems.map(item => (
-                  <Link key={item} to="/" className="block text-gray-600 hover:text-blue-600" onClick={() => setMobileMenuOpen(false)}>
+                  <Link key={item} to="/" className={`block relative group ${
+                    isActive(item) 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`} onClick={() => setMobileMenuOpen(false)}>
                     {item}
+                    <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${
+                      isActive(item) ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}></span>
                   </Link>
                 ))}
                 {!isLoggedIn ? (
                   <div className="pt-3 space-y-2">
-                    <button onClick={() => { setShowLogin(true); setMobileMenuOpen(false); }} className="block w-full text-left text-gray-600 hover:text-blue-600">
+                    <button onClick={() => { setShowLogin(true); setMobileMenuOpen(false); }} className="block w-full text-left text-gray-600 hover:text-blue-600 relative group">
                       Sign In
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                     </button>
-                    <button onClick={() => { setShowRegister(true); setMobileMenuOpen(false); }} className="block w-full text-left text-gray-600 hover:text-blue-600">
+                    <button onClick={() => { setShowRegister(true); setMobileMenuOpen(false); }} className="block w-full text-left text-gray-600 hover:text-blue-600 relative group">
                       Sign Up
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
                     </button>
                   </div>
                 ) : (

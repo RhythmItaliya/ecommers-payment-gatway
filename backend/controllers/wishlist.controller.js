@@ -16,9 +16,16 @@ const getUserWishlist = async (req, res) => {
       await wishlist.save();
     }
     
+    // Transform the data to match frontend expectations
+    const transformedProducts = wishlist.products.map(item => ({
+      _id: item._id,
+      productId: item.productId, // This will be the populated product
+      addedAt: item.addedAt
+    }));
+    
     res.json({
       success: true,
-      data: wishlist.products,
+      data: transformedProducts,
       totalItems: wishlist.products.length
     });
   } catch (error) {
@@ -86,10 +93,17 @@ const addToWishlist = async (req, res) => {
     // Populate product details
     await wishlist.populate('products.productId');
     
+    // Transform the data to match frontend expectations
+    const transformedProducts = wishlist.products.map(item => ({
+      _id: item._id,
+      productId: item.productId, // This will be the populated product
+      addedAt: item.addedAt
+    }));
+    
     res.json({
       success: true,
       message: 'Product added to wishlist',
-      data: wishlist.products,
+      data: transformedProducts,
       totalItems: wishlist.products.length
     });
   } catch (error) {
@@ -150,10 +164,17 @@ const removeFromWishlist = async (req, res) => {
     // Populate product details
     await wishlist.populate('products.productId');
     
+    // Transform the data to match frontend expectations
+    const transformedProducts = wishlist.products.map(item => ({
+      _id: item._id,
+      productId: item.productId, // This will be the populated product
+      addedAt: item.addedAt
+    }));
+    
     res.json({
       success: true,
       message: 'Product removed from wishlist',
-      data: wishlist.products,
+      data: transformedProducts,
       totalItems: wishlist.products.length
     });
   } catch (error) {
