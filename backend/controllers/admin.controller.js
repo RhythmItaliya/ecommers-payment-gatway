@@ -306,7 +306,7 @@ const getSettings = async (req, res) => {
                     PORT: config.port,
                     MONGODB_URI: config.mongoUri ? 'Configured' : 'Not Configured',
                     RAZORPAY_KEY_ID: config.razorpay.keyId ? 'Configured' : 'Not Configured',
-                    STRIPE_KEY: config.stripe.key ? 'Configured' : 'Not Configured'
+            
                 }
             }
         });

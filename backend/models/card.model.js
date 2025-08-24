@@ -6,7 +6,7 @@ const cardSchema = mongoose.Schema({
     last4: { type: Number, required: true },
     exp_month: { type: Number, required: true },
     fingerprint: { type: String},
-    user_id: { type: String, required: true },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     exp_year: Number,
     customer: String,
     country: String,

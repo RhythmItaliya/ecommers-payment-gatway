@@ -10,9 +10,13 @@ const app = express();
 app.use(cors({
     origin: config.frontendUrl,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -30,12 +34,13 @@ app.use('/api/user', require('./routes/user.routes'));
 app.use('/api/admin/auth', require('./routes/adminAuth.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/cart', require('./routes/cart.routes'));
-app.use('/api/payment', require('./routes/payment.routes'));
+
 app.use('/api/razorpay', require('./routes/razorpay.routes'));
-app.use('/api/direct-pay', require('./routes/directPay.routes'));
+
 app.use('/api/wishlist', require('./routes/wishlist.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/products', require('./routes/products.routes'));
+app.use('/api/orders', require('./routes/order.routes'));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -51,6 +56,7 @@ app.listen(PORT, () => {
   console.log(`Admin API: http://localhost:${PORT}/api/admin`);
   console.log(`User API: http://localhost:${PORT}/api/user`);
   console.log(`Cart API: http://localhost:${PORT}/api/cart`);
+  console.log(`Razorpay API: http://localhost:${PORT}/api/razorpay`);
   console.log(`Wishlist API: http://localhost:${PORT}/api/wishlist`);
   console.log(`Upload API: http://localhost:${PORT}/api/upload`);
   console.log(`Cloudinary: ${config.cloudinary.cloudName} (${config.cloudinary.folder})`);

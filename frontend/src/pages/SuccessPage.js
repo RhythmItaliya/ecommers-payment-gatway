@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 
 const SuccessPage = () => {
     const location = useLocation();
-    const { paymentIntentId, paymentMethod = 'Stripe' } = location.state || {};
+    const { paymentIntentId, paymentMethod = 'Razorpay' } = location.state || {};
     const token = useSelector(state => state.auth.token);
 
     const [paymentStatus, setPaymentStatus] = useState(null);
@@ -22,7 +22,7 @@ const SuccessPage = () => {
                 let response;
                 if (paymentMethod === 'Razorpay') {
                     // For Razorpay, use the payment ID endpoint
-                    response = await axios.get(`http://localhost:8000/api/razorpay/payment/${paymentIntentId}`, {
+                    response = await axios.get(`${process.env.REACT_APP_API_URL}/razorpay/payment/${paymentIntentId}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -30,14 +30,14 @@ const SuccessPage = () => {
                     });
                     setPaymentStatus(response.data.payment);
                 } else {
-                    // For Stripe, use the existing payment status endpoint
-                    response = await axios.get(`http://localhost:8000/api/payment-status/${paymentIntentId}`, {
+                    // For other payment methods, use the razorpay endpoint
+                    response = await axios.get(`${process.env.REACT_APP_API_URL}/razorpay/payment/${paymentIntentId}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         }
                     });
-                    setPaymentStatus(response.data.paymentIntent);
+                    setPaymentStatus(response.data.payment);
                 }
             } catch (error) {
                 setError('Error fetching payment status');
@@ -107,16 +107,13 @@ const SuccessPage = () => {
                                     </div>
                                 ))
                             ) : (
-                                // Stripe payment details
+                                // Other payment method details
                                 [
                                     { label: 'Payment ID', value: paymentStatus.id },
-                                    { label: 'Amount', value: `$${(paymentStatus.amount / 100).toFixed(2)}` },
+                                    { label: 'Amount', value: `₹${(paymentStatus.amount / 100).toFixed(2)}` },
                                     { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
                                     { label: 'Status', value: paymentStatus.status },
-                                    { label: 'Client Secret', value: paymentStatus.client_secret },
-                                    { label: 'Capture Method', value: paymentStatus.capture_method },
-                                    { label: 'Payment Method', value: paymentStatus.payment_method },
-                                    { label: 'Redirect URL', value: redirectUrl },
+                                    { label: 'Payment Method', value: 'Razorpay' },
                                 ].map(({ label, value }) => (
                                     <div key={label} className="flex items-center space-x-4 border-b border-gray-200 pb-3">
                                         <span className="font-semibold w-1/3 text-gray-900">{label}</span>

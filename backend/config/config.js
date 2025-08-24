@@ -25,10 +25,6 @@ const config = {
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   
   // Payment Gateway Keys
-  stripe: {
-    key: process.env.STRIPE_KEY || 'your_stripe_key_here'
-  },
-  
   razorpay: {
     keyId: process.env.RAZORPAY_KEY_ID || 'your_razorpay_key_id_here',
     keySecret: process.env.RAZORPAY_KEY_SECRET || 'your_razorpay_secret_here'

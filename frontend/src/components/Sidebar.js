@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { clearCart, fetchCart } from "../redux/cartAction";
 import CartItem from "../components/CartItem";
 import { SidebarContext } from "../contexts/SidebarContext";
-import { formatINRPrice } from "../utils/currency";
+import { formatINRPrice, roundAmount } from "../utils/currency";
 
 const Sidebar = () => {
   const { isOpen, handleClose } = useContext(SidebarContext);
@@ -14,6 +14,9 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const { items, totalQuantity, totalAmount, loading } = useSelector(state => state.cart);
   const { isLoggedIn } = useSelector(state => state.auth);
+  
+  // Round the amount to avoid floating-point precision issues
+  const roundedTotalAmount = roundAmount(totalAmount || 0);
 
   // Fetch cart data when sidebar opens
   useEffect(() => {
@@ -80,7 +83,7 @@ const Sidebar = () => {
       {/* Footer */}
       <div className="py-4 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="font-semibold">Subtotal: {formatINRPrice(totalAmount || 0)}</span>
+          <span className="font-semibold">Subtotal: {formatINRPrice(roundedTotalAmount)}</span>
           {items.length > 0 && (
             <button 
               onClick={() => dispatch(clearCart())} 

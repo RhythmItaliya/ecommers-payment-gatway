@@ -46,15 +46,24 @@ const cartSchema = new mongoose.Schema({
 cartSchema.pre('save', function(next) {
   console.log('Cart pre-save hook - items:', this.items);
   
-  this.totalQuantity = this.items.reduce((total, item) => {
-    console.log('Item in pre-save:', item);
-    return total + item.quantity;
-  }, 0);
-  
-  this.totalAmount = this.items.reduce((total, item) => {
-    console.log('Calculating total for item:', item, 'price:', item.price, 'quantity:', item.quantity);
-    return total + (item.price * item.quantity);
-  }, 0);
+  // Only calculate totals if items exist and are not empty
+  if (this.items && Array.isArray(this.items) && this.items.length > 0) {
+    this.totalQuantity = this.items.reduce((total, item) => {
+      console.log('Item in pre-save:', item);
+      return total + (item.quantity || 0);
+    }, 0);
+    
+    this.totalAmount = this.items.reduce((total, item) => {
+      console.log('Calculating total for item:', item, 'price:', item.price, 'quantity:', item.quantity);
+      const itemTotal = (item.price || 0) * (item.quantity || 0);
+      // Round to 2 decimal places to avoid floating-point precision issues
+      return Math.round((total + itemTotal) * 100) / 100;
+    }, 0);
+  } else {
+    // If no items, set totals to 0
+    this.totalQuantity = 0;
+    this.totalAmount = 0;
+  }
   
   console.log('Calculated totals - quantity:', this.totalQuantity, 'amount:', this.totalAmount);
   next();

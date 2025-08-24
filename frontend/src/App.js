@@ -1,7 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Elements } from '@stripe/react-stripe-js'
-import { loadStripe } from '@stripe/stripe-js'
+
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
@@ -19,18 +18,15 @@ import Footer from "./components/Footer";
 import Checkout from "./card/Checkout";
 import SuccessPage from "./pages/SuccessPage";
 
-const stripePromise = loadStripe('pk_test_51ORpDXSJivXBSgor7CxOo2rbwC8nhsIfwqxlxb76hPtuTzY4z2we4yK30AnBGsFbalURavuyqsk8obBmYRd7ZA8d00UPnsjnGY')
-
 const App = () => {
   return (
     <Provider store={store}>
       <AuthProvider>
         <SidebarProvider>
           <ProductProvider>
-            <Elements stripe={stripePromise}>
-              <Router>
-                <div className="min-h-screen bg-gray-50">
-                  <Header />
+            <Router>
+              <div className="min-h-screen bg-gray-50">
+                <Header />
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/products" element={<Products />} />
@@ -40,11 +36,10 @@ const App = () => {
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/success" element={<SuccessPage />} />
                   </Routes>
-                  <Sidebar />
-                  <Footer />
-                </div>
-              </Router>
-            </Elements>
+                <Sidebar />
+                <Footer />
+              </div>
+            </Router>
           </ProductProvider>
         </SidebarProvider>
       </AuthProvider>

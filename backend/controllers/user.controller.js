@@ -1,21 +1,16 @@
 require('dotenv').config();
-const stripe = require('stripe')(require('../config/config').stripe.key);
 const User = require("../models/user.model")
 const bcrypt = require('bcrypt')
 const jwtService = require('../services/jwt.service');
 
 const registerUser = async (req, res) => {
-    // console.log("🚀 ~ process.env.STRIPE_KEY123:", process.env.STRIPE_KEY)
     const { username, password, email, phone, address, avatar } = req.body
 
-    const customer = await stripe.customers.create({
-        email: email,
-        name: username
-    });
-    // console.log("🚀 ~ registerUser ~ customer:", customer)
-
     try {
-        const userData = { username, password, email, customer_id: customer.id };
+        // Generate a unique customer ID for Razorpay
+        const customer_id = `cust_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const userData = { username, password, email, customer_id };
         
         // Add optional fields if provided
         if (phone !== undefined) userData.phone = phone;
@@ -29,12 +24,6 @@ const registerUser = async (req, res) => {
             data: user
         })
     } catch (error) {
-        // Clean up Stripe customer if user creation fails
-        try {
-            await stripe.customers.del(customer.id);
-        } catch (stripeError) {
-            console.error('Error deleting Stripe customer:', stripeError);
-        }
         
         // Handle validation errors
         if (error.name === 'ValidationError') {
@@ -255,20 +244,14 @@ const testUserProfile = async (req, res) => {
             avatar: 'https://example.com/avatar.jpg'
         };
 
-        // Create Stripe customer
-        const customer = await stripe.customers.create({
-            email: testUserData.email,
-            name: testUserData.username
-        });
-
-        testUserData.customer_id = customer.id;
+        // Generate a unique customer ID for Razorpay
+        testUserData.customer_id = `cust_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Try to create user
         const user = await User.create(testUserData);
         
         // Clean up test data
         await User.findByIdAndDelete(user._id);
-        await stripe.customers.del(customer.id);
 
         return res.status(200).json({
             status: 200,

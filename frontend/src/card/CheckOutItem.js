@@ -9,7 +9,8 @@ const CheckOutItem = ({ item }) => {
         return null; // Skip if no product data
     }
     
-    const { title, image, price, quantity } = product;
+    const { title, image, price } = product;
+    const quantity = item.quantity; // Get quantity from the cart item, not from product
 
     return (
         <div className="flex gap-x-4 py-2 border-b border-gray-200 w-full font-light text-gray-500">
@@ -21,18 +22,18 @@ const CheckOutItem = ({ item }) => {
                     <div className="flex justify-between mb-2">
                         <span className="text-sm uppercase font-medium text-primary">{title}</span>
                     </div>
-                    <div className="flex gap-x-2 h-[36px] text-sm">
+                    <div className="flex justify-between items-center h-[36px] text-sm">
                         {/* Quantity */}
                         <div className="flex items-center text-primary font-medium">
                             Quantity: {quantity}
                         </div>
-                        {/* Item Price */}
-                        <div className="flex items-center justify-center">
-                            {formatINRPrice(price)}
+                        {/* Unit Price */}
+                        <div className="flex items-center text-gray-600">
+                            Unit: {formatINRPrice(price)}
                         </div>
-                        {/* Final Price */}
-                        <div className="flex items-center justify-end text-primary font-medium">
-                            {formatINRPrice(price * quantity)}
+                        {/* Total Price */}
+                        <div className="flex items-center text-primary font-medium">
+                            Total: {formatINRPrice(price * quantity)}
                         </div>
                     </div>
                 </div>
