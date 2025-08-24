@@ -195,6 +195,16 @@ const cartReducer = (state = initialState, action) => {
         totalAmount: 0
       };
 
+    case 'CLEAR_ALL_STORES':
+      return {
+        ...state,
+        items: [],
+        totalQuantity: 0,
+        totalAmount: 0,
+        loading: false,
+        error: null
+      };
+
     default:
       return state;
   }

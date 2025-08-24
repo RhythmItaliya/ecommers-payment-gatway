@@ -1,6 +1,7 @@
 import React, { createContext } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../redux/authAction';
+import { clearAllData } from '../utils/storeUtils';
 
 // Create context
 export const AuthContext = createContext();
@@ -13,6 +14,8 @@ export const AuthProvider = ({ children }) => {
     const handleLogout = () => {
         // Dispatch logout action which handles both localStorage and cookies
         dispatch(logoutUser());
+        // Clear all Redux stores and localStorage
+        clearAllData(dispatch);
     };
 
     return (

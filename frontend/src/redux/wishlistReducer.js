@@ -124,6 +124,15 @@ const wishlistReducer = (state = initialState, action) => {
         totalItems: 0
       };
 
+    case 'CLEAR_ALL_STORES':
+      return {
+        ...state,
+        items: [],
+        totalItems: 0,
+        loading: false,
+        error: null
+      };
+
     default:
       return state;
   }

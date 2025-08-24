@@ -6,6 +6,7 @@ import { logoutUser } from '../redux/authAction';
 import { updateUserProfile } from '../redux/authAction';
 import { showSuccessToast, showErrorToast } from '../redux/toastAction';
 import OrderHistory from '../components/OrderHistory';
+import { clearAllData } from '../utils/storeUtils';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
@@ -137,12 +138,16 @@ const UserProfile = () => {
             const result = await dispatch(logoutUser());
             
             if (logoutUser.fulfilled.match(result)) {
+                // Clear all Redux stores and localStorage
+                clearAllData(dispatch);
                 dispatch(showSuccessToast('Logged out successfully!'));
             }
             
             navigate('/');
         } catch (error) {
             console.error('Logout error:', error);
+            // Even if logout fails, clear all stores
+            clearAllData(dispatch);
         }
     };
 

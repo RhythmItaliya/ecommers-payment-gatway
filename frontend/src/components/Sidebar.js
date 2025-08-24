@@ -13,7 +13,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { items, totalQuantity, totalAmount, loading } = useSelector(state => state.cart);
-  const { isLoggedIn } = useSelector(state => state.auth);
+  const { isLoggedIn, user } = useSelector(state => state.auth);
   
   // Round the amount to avoid floating-point precision issues
   const roundedTotalAmount = roundAmount(totalAmount || 0);
@@ -46,8 +46,15 @@ const Sidebar = () => {
   }, [items, totalQuantity, totalAmount, loading]);
 
   const handleCheckout = () => {
-    handleClose();
-    navigate("/checkout");
+    // Check if user has address before proceeding to checkout
+    // If no address, redirect to profile page to add address first
+    if (user && user.address && user.address.streetAddress && user.address.city) {
+      handleClose();
+      navigate("/checkout");
+    } else {
+      handleClose();
+      navigate("/profile");
+    }
   };
 
   return (
@@ -103,9 +110,19 @@ const Sidebar = () => {
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
           disabled={items.length === 0}
+          title={items.length > 0 && (!user?.address?.streetAddress || !user?.address?.city) 
+            ? "Please add your address before checkout" 
+            : ""}
         >
           {items.length > 0 ? 'Checkout' : 'Cart is Empty'}
         </button>
+        
+        {/* Address reminder */}
+        {items.length > 0 && (!user?.address?.streetAddress || !user?.address?.city) && (
+          <div className="text-center text-sm text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
+            ⚠️ Please add your address in profile before checkout
+          </div>
+        )}
       </div>
     </div>
   );

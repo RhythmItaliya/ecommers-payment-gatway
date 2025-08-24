@@ -114,3 +114,8 @@ export const logoutUser = createAsyncThunk(
         }
     }
 );
+
+// Action to clear all Redux stores
+export const clearAllStores = () => ({
+    type: 'CLEAR_ALL_STORES'
+});

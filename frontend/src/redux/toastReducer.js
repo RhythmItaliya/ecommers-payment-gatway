@@ -30,6 +30,12 @@ const toastReducer = (state = initialState, action) => {
                 toasts: []
             };
             
+        case 'CLEAR_ALL_STORES':
+            return {
+                ...state,
+                toasts: []
+            };
+            
         default:
             return state;
     }

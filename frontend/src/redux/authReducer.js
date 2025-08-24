@@ -116,14 +116,27 @@ const authSlice = createSlice({
                 state.error = null;
             })
             .addCase(logoutUser.fulfilled, (state) => {
+                // Clear auth state
+                state.token = null;
+                state.isLoggedIn = false;
+                state.user = null;
+                state.loading = false;
+                state.error = null;
+                
+                // Dispatch clearAllStores to clear other reducers
+                // This will be handled by the component calling logoutUser
+            })
+            .addCase(logoutUser.rejected, (state) => {
+                // Even if logout fails, clear the state
                 state.token = null;
                 state.isLoggedIn = false;
                 state.user = null;
                 state.loading = false;
                 state.error = null;
             })
-            .addCase(logoutUser.rejected, (state) => {
-                // Even if logout fails, clear the state
+            
+            // Clear all stores case
+            .addCase('CLEAR_ALL_STORES', (state) => {
                 state.token = null;
                 state.isLoggedIn = false;
                 state.user = null;

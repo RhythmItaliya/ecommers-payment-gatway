@@ -6,16 +6,31 @@ import { removeFromCart, updateCartItemQuantity } from '../redux/cartAction';
 import CheckOutItem from './CheckOutItem';
 import { RazorpayPayment } from './RazorpayPayment';
 import { formatINRPrice, roundAmount } from '../utils/currency';
-import axios from 'axios';
 
 const Checkout = () => {
     const { items: cart, totalAmount: total, loading: cartLoading } = useSelector(state => state.cart);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [paymentGateway] = useState('razorpay'); // Only Razorpay for now
+    
+    const token = useSelector(state => state.auth.token);
 
     // Round the amount to avoid floating-point precision issues
     const roundedTotal = roundAmount(total);
+
+    // Check authentication on component mount
+    useEffect(() => {
+        if (!token) {
+            navigate('/');
+        }
+    }, [token, navigate]);
+
+    // Redirect to home if token is removed while on checkout page
+    useEffect(() => {
+        if (!token) {
+            navigate('/');
+        }
+    }, [token, navigate]);
 
     const handleRemoveFromCart = (item) => {
         // Handle both data structures: item.productId and item.product
@@ -36,6 +51,29 @@ const Checkout = () => {
         }
     };
 
+    // Check if user is authenticated
+    if (!token) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="text-center p-8">
+                    <div className="text-gray-400 mb-4">
+                        <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Authentication Required</h3>
+                    <p className="text-gray-500 mb-6">Please login to access the checkout page.</p>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Go to Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     if (cartLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -47,6 +85,7 @@ const Checkout = () => {
         );
     }
 
+    // Check if user has items in cart
     if (cart.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -88,28 +127,38 @@ const Checkout = () => {
                             </div>
                         ))}
                     </ul>
-                    
-                    {/* Complete Payment Summary */}
-                    <div className="mt-4 space-y-2">
-                        <div className="flex justify-between items-center py-2 border-t border-gray-200">
-                            <span className="font-medium text-gray-700">Subtotal:</span>
-                            <span className="font-semibold">{formatINRPrice(roundedTotal)}</span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center py-2 border-t border-gray-200">
-                            <span className="font-bold text-lg text-gray-800">Total:</span>
-                            <div className="text-right">
-                                <span className="font-bold text-lg text-gray-800">{formatINRPrice(roundedTotal)}</span>
-                                <p className="text-sm text-gray-500">Including all taxes</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Payment Section */}
                 <div className="w-full lg:w-1/2 p-6 bg-gray-50">
-                    <h2 className="text-xl font-semibold mb-4">Payment</h2>
-                    
+                    {/* Order Summary */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3">Order Summary</h3>
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Items ({cart.length}):</span>
+                                    <span className="font-medium">{formatINRPrice(roundedTotal)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Shipping:</span>
+                                    <span className="text-green-600 font-medium">Free</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Tax:</span>
+                                    <span className="text-gray-600">Included</span>
+                                </div>
+                                <div className="border-t pt-2 mt-2">
+                                    <div className="flex justify-between">
+                                        <span className="font-semibold text-lg">Total:</span>
+                                        <span className="font-bold text-lg text-blue-600">{formatINRPrice(roundedTotal)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Payment Gateway */}
                     {paymentGateway === 'razorpay' && (
                         <div className="space-y-4">
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
