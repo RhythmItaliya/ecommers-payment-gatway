@@ -8,6 +8,16 @@ const userSchema = new mongoose.Schema({
         required: [true, 'username is required!'],
         unique: '{VALUE} is already exists!'
     },
+    firstName: {
+        type: String,
+        default: '',
+        maxlength: [50, 'First name cannot exceed 50 characters']
+    },
+    lastName: {
+        type: String,
+        default: '',
+        maxlength: [50, 'Last name cannot exceed 50 characters']
+    },
     password: {
         type: String,
         minlength: [5, 'password is two weak!'],

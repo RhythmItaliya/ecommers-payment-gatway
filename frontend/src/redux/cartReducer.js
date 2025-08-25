@@ -16,8 +16,6 @@ const initialState = {
 };
 
 const cartReducer = (state = initialState, action) => {
-  console.log('Cart reducer action:', action.type, action.payload);
-  
   switch (action.type) {
     // Handle async thunk pending states
     case 'cart/addToCart/pending':
@@ -33,7 +31,6 @@ const cartReducer = (state = initialState, action) => {
 
     // Handle async thunk fulfilled states
     case 'cart/addToCart/fulfilled':
-      console.log('addToCart fulfilled:', action.payload);
       return {
         ...state,
         items: action.payload.data || [],
@@ -44,7 +41,6 @@ const cartReducer = (state = initialState, action) => {
       };
 
     case 'cart/removeFromCart/fulfilled':
-      console.log('removeFromCart fulfilled:', action.payload);
       return {
         ...state,
         items: action.payload.data || [],
@@ -55,7 +51,6 @@ const cartReducer = (state = initialState, action) => {
       };
 
     case 'cart/updateCartItemQuantity/fulfilled':
-      console.log('updateCartItemQuantity fulfilled:', action.payload);
       return {
         ...state,
         items: action.payload.data || [],
@@ -66,7 +61,6 @@ const cartReducer = (state = initialState, action) => {
       };
 
     case 'cart/clearCart/fulfilled':
-      console.log('clearCart fulfilled:', action.payload);
       return {
         ...state,
         items: [],
@@ -77,7 +71,6 @@ const cartReducer = (state = initialState, action) => {
       };
 
     case 'cart/fetchCart/fulfilled':
-      console.log('fetchCart fulfilled:', action.payload);
       return {
         ...state,
         items: action.payload.data || [],
@@ -93,7 +86,6 @@ const cartReducer = (state = initialState, action) => {
     case 'cart/updateCartItemQuantity/rejected':
     case 'cart/clearCart/rejected':
     case 'cart/fetchCart/rejected':
-      console.log('Cart action rejected:', action.payload);
       return {
         ...state,
         loading: false,
@@ -102,7 +94,6 @@ const cartReducer = (state = initialState, action) => {
 
     // Handle regular actions
     case SET_CART:
-      console.log('SET_CART:', action.payload);
       return {
         ...state,
         items: action.payload.items || action.payload || [],

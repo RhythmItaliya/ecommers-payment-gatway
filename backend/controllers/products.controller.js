@@ -18,9 +18,13 @@ const getAllProducts = async (req, res) => {
       ];
     }
 
-    // Build sort query
+    // Build sort query - handle both id and _id
     let sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    if (sortBy === 'id') {
+      sort.id = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
 
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -63,7 +67,21 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const product = await Product.findOne({ id: parseInt(id) });
+    let product;
+    
+    // Try to find by numeric ID first
+    if (!isNaN(id)) {
+      product = await Product.findOne({ id: parseInt(id) });
+    }
+    
+    // If not found by numeric ID, try by MongoDB _id
+    if (!product) {
+      try {
+        product = await Product.findById(id);
+      } catch (err) {
+        // Invalid MongoDB ObjectId format, continue
+      }
+    }
     
     if (!product) {
       return res.status(404).json({
@@ -91,9 +109,13 @@ const getProductsByCategory = async (req, res) => {
     const { category } = req.params;
     const { page = 1, limit = 20, sortBy = 'id', sortOrder = 'asc' } = req.query;
     
-    // Build sort query
+    // Build sort query - handle both id and _id
     let sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    if (sortBy === 'id') {
+      sort.id = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
 
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -153,9 +175,13 @@ const searchProducts = async (req, res) => {
       ]
     };
 
-    // Build sort query
+    // Build sort query - handle both id and _id
     let sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    if (sortBy === 'id') {
+      sort.id = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
 
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);

@@ -1,22 +1,35 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
 import Home from "./pages/Home";
-import ProductDetails from "./pages/ProductDetails";
+import ProductDetails from "./components/product/ProductDetails";
 import Products from "./pages/Products";
-import Wishlist from "./pages/Wishlist";
-import UserProfile from "./pages/UserProfile";
+import Wishlist from "./components/profile/Wishlist";
+import UserProfile from "./components/profile/UserProfile";
 import { AuthProvider } from "./contexts/AuthContext";
 import SidebarProvider from "./contexts/SidebarContext";
 import ProductProvider from "./contexts/ProductContext";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./cart/Sidebar";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Checkout from "./card/Checkout";
+import Checkout from "./components/profile/Checkout";
+import RazorpayPayment from "./components/profile/RazorpayPayment";
 import SuccessPage from "./pages/SuccessPage";
+import NotFound from "./pages/NotFound";
+
+// ScrollToTop component to scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const App = () => {
   return (
@@ -25,6 +38,7 @@ const App = () => {
         <SidebarProvider>
           <ProductProvider>
             <Router>
+              <ScrollToTop />
               <div className="min-h-screen bg-gray-50">
                 <Header />
                   <Routes>
@@ -34,7 +48,9 @@ const App = () => {
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/profile" element={<UserProfile />} />
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/razorpay-payment" element={<RazorpayPayment />} />
                     <Route path="/success" element={<SuccessPage />} />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 <Sidebar />
                 <Footer />

@@ -18,8 +18,8 @@ const getUserWishlist = async (req, res) => {
     
     // Transform the data to match frontend expectations
     const transformedProducts = wishlist.products.map(item => ({
-      _id: item._id,
-      productId: item.productId, // This will be the populated product
+      ...item.productId.toObject(),
+      wishlistItemId: item._id,
       addedAt: item.addedAt
     }));
     
@@ -95,8 +95,8 @@ const addToWishlist = async (req, res) => {
     
     // Transform the data to match frontend expectations
     const transformedProducts = wishlist.products.map(item => ({
-      _id: item._id,
-      productId: item.productId, // This will be the populated product
+      ...item.productId.toObject(),
+      wishlistItemId: item._id,
       addedAt: item.addedAt
     }));
     
@@ -166,8 +166,8 @@ const removeFromWishlist = async (req, res) => {
     
     // Transform the data to match frontend expectations
     const transformedProducts = wishlist.products.map(item => ({
-      _id: item._id,
-      productId: item.productId, // This will be the populated product
+      ...item.productId.toObject(),
+      wishlistItemId: item._id,
       addedAt: item.addedAt
     }));
     

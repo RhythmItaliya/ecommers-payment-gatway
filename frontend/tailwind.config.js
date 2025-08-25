@@ -20,9 +20,13 @@ module.exports = {
     },
     extend: {
       colors: {
-        primary: '#222222',
-        secondary: '#F5E6E0',
-        'custom-gray': '#2f2f2f',
+        primary: '#1f2937',      // Dark gray/blue - main brand color
+        secondary: '#f59e0b',    // Amber/orange - accent color
+        accent: '#3b82f6',       // Blue - call-to-action
+        success: '#10b981',      // Green - success states
+        danger: '#ef4444',       // Red - error states
+        neutral: '#6b7280',      // Gray - neutral text
+        light: '#f9fafb',        // Light gray - backgrounds
       },
       backgroundImage: {
         hero: "url('./img/bghero.jpg')",

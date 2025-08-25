@@ -4,7 +4,7 @@ import { IoMdArrowForward } from "react-icons/io";
 import { FiTrash2 } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCart, fetchCart } from "../redux/cartAction";
-import CartItem from "../components/CartItem";
+import CartItem from "./CartItem";
 import { SidebarContext } from "../contexts/SidebarContext";
 import { formatINRPrice, roundAmount } from "../utils/currency";
 

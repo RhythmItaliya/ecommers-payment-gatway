@@ -3,10 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../redux/authAction';
 import { showSuccessToast, showErrorToast } from '../redux/toastAction';
 import { FaTimes } from 'react-icons/fa';
+import { Input, Button } from '../components/ui';
 
 const Register = ({ isOpen, onClose, onLoginClick }) => {
     const [formData, setFormData] = useState({
         username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: ''
     });
@@ -24,6 +27,16 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
         // Basic frontend validation
         if (!formData.username.trim()) {
             dispatch(showErrorToast('Username is required'));
+            return;
+        }
+        
+        if (!formData.firstName.trim()) {
+            dispatch(showErrorToast('First name is required'));
+            return;
+        }
+        
+        if (!formData.lastName.trim()) {
+            dispatch(showErrorToast('Last name is required'));
             return;
         }
         
@@ -53,6 +66,8 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
             // Trim the form data before sending
             const cleanFormData = {
                 username: formData.username.trim(),
+                firstName: formData.firstName.trim(),
+                lastName: formData.lastName.trim(),
                 email: formData.email.trim(),
                 password: formData.password
             };
@@ -87,78 +102,92 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div className={`bg-white p-8 rounded-lg shadow-lg max-w-md w-full relative ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className={`bg-white p-8 rounded-xl shadow-2xl max-w-md w-full relative ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute top-5 right-5 text-gray-500 hover:text-gray-700"
+                    className="absolute top-5 right-5 text-neutral hover:text-primary transition-colors"
                 >
                     <FaTimes size={20} />
                 </button>
-                <h2 className="text-2xl font-bold mb-4">Register</h2>
+                <h2 className="text-2xl font-bold text-primary mb-6">Register</h2>
                 {/* Error messages now handled by toast notifications */}
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-                        <input
+                        <Input
+                            label="Username"
                             type="text"
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
                             disabled={loading}
                             autoComplete="username"
                         />
                     </div>
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                        <input
+                        <Input
+                            label="First Name"
+                            type="text"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                            required
+                            disabled={loading}
+                            autoComplete="given-name"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="Last Name"
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            required
+                            disabled={loading}
+                            autoComplete="family-name"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="Email"
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
                             disabled={loading}
                             autoComplete="email"
                         />
                     </div>
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
+                        <Input
+                            label="Password"
                             type="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
                             disabled={loading}
                             autoComplete="new-password"
                         />
                     </div>
                     <div className="flex items-center justify-between">
-                        <button
+                        <Button
                             type="submit"
-                            className={`py-2 px-4 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg max-w-md ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            variant="primary"
+                            size="lg"
+                            className="w-full"
                             disabled={loading}
+                            loading={loading}
                         >
-                            {loading ? (
-                                <>
-                                    <svg width="20" height="20" fill="currentColor" className="mr-2 animate-spin" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z">
-                                        </path>
-                                    </svg>
-                                    Loading
-                                </>
-                            ) : (
-                                'Register'
-                            )}
-                        </button>
+                            {loading ? 'Creating Account...' : 'Register'}
+                        </Button>
                     </div>
-                    <div className="text-sm font-medium text-gray-500 text-center">
-                        Already registered? <button type="button" onClick={() => { onClose(); onLoginClick(); }} className="text-blue-700 hover:underline">Login to your account</button>
+                    <div className="text-sm font-medium text-neutral text-center">
+                        Already registered? <button type="button" onClick={() => { onClose(); onLoginClick(); }} className="text-accent hover:text-accent/80 transition-colors">Login to your account</button>
                     </div>
                 </form>
             </div>

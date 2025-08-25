@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redux/authAction';
+import { Button } from '../components/ui';
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -17,9 +18,14 @@ const Logout = () => {
   };
 
   return (
-    <button onClick={handleLogout} className="btn">
+    <Button 
+      variant="outline" 
+      size="sm" 
+      onClick={handleLogout}
+      className="text-danger border-danger hover:bg-danger hover:text-white"
+    >
       Logout
-    </button>
+    </Button>
   );
 };
 

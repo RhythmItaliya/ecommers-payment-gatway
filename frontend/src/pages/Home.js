@@ -1,14 +1,20 @@
 import React from "react";
-import Hero from '../components/Hero'
-import FeaturedCollection from '../components/FeaturedCollection'
-import ProductShowcase from '../components/ProductShowcase'
+import Hero from '../components/home/Hero'
+import FeaturedCollection from '../components/home/FeaturedCollection'
+import RepasseCollections from '../components/home/RepasseCollections'
+import ServiceInfo from '../components/home/ServiceInfo'
+import TrendingProducts from '../components/home/TrendingProducts'
+import NewCollection from '../components/home/NewCollection'
 
 const Home = () => {
   return (
     <div className="pt-16">
       <Hero />
+      <ServiceInfo />
       <FeaturedCollection />
-      <ProductShowcase />
+      <TrendingProducts />
+      <RepasseCollections />
+      <NewCollection />
     </div>
   );
 };

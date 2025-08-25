@@ -91,12 +91,29 @@ const createOrderFromPayment = async (userId, paymentId, paymentMethod) => {
 
 const initializeRazorpay = () => {
     if (!razorpay) {
+        console.log('Environment variables check:', {
+            RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not Set',
+            RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not Set',
+            KEY_ID_LENGTH: process.env.RAZORPAY_KEY_ID ? process.env.RAZORPAY_KEY_ID.length : 0,
+            KEY_SECRET_LENGTH: process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.length : 0
+        });
+        
         if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
             throw new Error('RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables are required');
         }
+        
+        // Trim any whitespace from the keys
+        const keyId = process.env.RAZORPAY_KEY_ID.trim();
+        const keySecret = process.env.RAZORPAY_KEY_SECRET.trim();
+        
+        console.log('Initializing Razorpay with keys:', {
+            keyId: keyId.substring(0, 10) + '...',
+            keySecret: keySecret.substring(0, 10) + '...'
+        });
+        
         razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET
+            key_id: keyId,
+            key_secret: keySecret
         });
     }
     return razorpay;
@@ -105,7 +122,9 @@ const initializeRazorpay = () => {
 // Create Razorpay order
 const createOrder = async (req, res) => {
     try {
+        console.log('Starting createOrder function...');
         const razorpayInstance = initializeRazorpay();
+        console.log('Razorpay instance initialized successfully');
         const { amount, currency = 'INR', receipt } = req.body;
 
         if (!amount || !receipt) {
@@ -137,6 +156,9 @@ const createOrder = async (req, res) => {
             payment_capture: 1
         };
 
+        console.log('Razorpay order options:', options);
+        console.log('About to call Razorpay API...');
+        
         const order = await razorpayInstance.orders.create(options);
 
         res.status(200).json({

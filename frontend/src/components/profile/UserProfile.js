@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaSignOutAlt, FaGlobe, FaBuilding, FaHome, FaShoppingBag } from 'react-icons/fa';
-import { logoutUser } from '../redux/authAction';
-import { updateUserProfile } from '../redux/authAction';
-import { showSuccessToast, showErrorToast } from '../redux/toastAction';
-import OrderHistory from '../components/OrderHistory';
-import { clearAllData } from '../utils/storeUtils';
+import { logoutUser } from '../../redux/authAction';
+import { updateUserProfile } from '../../redux/authAction';
+import { showSuccessToast, showErrorToast } from '../../redux/toastAction';
+import OrderHistory from './OrderHistory';
+import { clearAllData } from '../../utils/storeUtils';
+import { Input, Button, LoadingSpinner } from '../ui';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
@@ -17,6 +18,8 @@ const UserProfile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         phone: '',
         address: {
@@ -39,6 +42,8 @@ const UserProfile = () => {
         if (user) {
             setFormData({
                 username: user.username || '',
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
                 email: user.email || '',
                 phone: user.phone || '',
                 address: {
@@ -98,6 +103,8 @@ const UserProfile = () => {
             // Prepare the data to update
             const updateData = {
                 username: formData.username.trim(),
+                firstName: formData.firstName.trim(),
+                lastName: formData.lastName.trim(),
                 email: formData.email.trim(),
                 phone: formData.phone.trim(),
                 address: formData.address
@@ -155,6 +162,8 @@ const UserProfile = () => {
         if (user) {
             setFormData({
                 username: user.username || '',
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
                 email: user.email || '',
                 phone: user.phone || '',
                 address: {
@@ -176,78 +185,81 @@ const UserProfile = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-20">
-            <div className="container mx-auto px-4 py-8">
-                <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gray-50 pt-20">
+            <div className="container mx-auto px-4 py-6">
+                <div className="max-w-5xl mx-auto">
                     {/* Header */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-4xl font-bold text-primary">
+                                <h1 className="text-2xl font-bold text-primary">
                                     My Profile
                                 </h1>
-                                <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+                                <p className="text-neutral text-sm mt-1">Manage your account settings and preferences</p>
                             </div>
-                            <button
+                            <Button
+                                variant="primary"
+                                size="md"
                                 onClick={handleLogout}
-                                className="flex items-center space-x-3 px-6 py-3 bg-primary text-white rounded-xl hover:bg-custom-gray transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                className="flex items-center space-x-2"
                             >
                                 <FaSignOutAlt />
-                                <span className="font-semibold">Sign Out</span>
-                            </button>
+                                <span>Sign Out</span>
+                            </Button>
                         </div>
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                         <div className="flex space-x-1">
-                            <button
+                            <Button
+                                variant={activeTab === 'profile' ? 'primary' : 'ghost'}
+                                size="sm"
                                 onClick={() => setActiveTab('profile')}
-                                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                                    activeTab === 'profile'
-                                        ? 'bg-primary text-white shadow-lg'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                                }`}
+                                className="flex items-center space-x-2"
                             >
                                 <FaUser className="h-4 w-4" />
                                 <span>Profile</span>
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant={activeTab === 'orders' ? 'primary' : 'ghost'}
+                                size="sm"
                                 onClick={() => setActiveTab('orders')}
-                                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                                    activeTab === 'orders'
-                                        ? 'bg-primary text-white shadow-lg'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                                }`}
+                                className="flex items-center space-x-2"
                             >
                                 <FaShoppingBag className="h-4 w-4" />
                                 <span>My Orders</span>
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
                     {activeTab === 'profile' ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             {/* Profile Card */}
                             <div className="lg:col-span-1">
-                                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 sticky top-24">
+                                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
                                     <div className="text-center">
-                                        <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-primary flex items-center justify-center text-white text-5xl font-bold shadow-lg">
-                                            {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                                        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold">
+                                            {user?.firstName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
                                         </div>
-                                        <h2 className="text-2xl font-bold text-primary mb-2">
-                                            {user?.username || 'User'}
+                                        <h2 className="text-xl font-bold text-primary mb-2">
+                                            {user?.firstName && user?.lastName 
+                                                ? `${user.firstName} ${user.lastName}` 
+                                                : user?.username || 'User'
+                                            }
                                         </h2>
-                                        <p className="text-gray-600 mb-6">{user?.email || 'user@example.com'}</p>
+                                        <p className="text-neutral text-sm mb-4">{user?.email || 'user@example.com'}</p>
                                         
                                         {!isEditing && (
-                                            <button
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
                                                 onClick={() => setIsEditing(true)}
-                                                className="w-full bg-primary text-white py-3 px-6 rounded-xl font-semibold hover:bg-custom-gray transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                className="w-full"
                                             >
                                                 <FaEdit className="inline mr-2" />
                                                 Edit Profile
-                                            </button>
+                                            </Button>
                                         )}
                                     </div>
                                 </div>
@@ -255,234 +267,222 @@ const UserProfile = () => {
 
                             {/* Profile Details */}
                             <div className="lg:col-span-3">
-                                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h3 className="text-2xl font-bold text-gray-900">Profile Information</h3>
+                                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-xl font-bold text-primary">Profile Information</h3>
                                         {isEditing && (
                                             <div className="flex space-x-3">
-                                                <button
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={handleCancelEdit}
-                                                    className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
                                                 >
                                                     Cancel
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     type="submit"
+                                                    variant="secondary"
+                                                    size="sm"
                                                     form="profile-form"
                                                     disabled={loading}
-                                                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    loading={loading}
                                                 >
                                                     {loading ? 'Saving...' : 'Save Changes'}
-                                                </button>
+                                                </Button>
                                             </div>
                                         )}
                                     </div>
                                     
-                                    <form id="profile-form" onSubmit={handleSubmit} className="space-y-8">
+                                    <form id="profile-form" onSubmit={handleSubmit} className="space-y-6">
                                         {/* Personal Information */}
-                                        <div className="space-y-6">
-                                            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                                        <div className="space-y-4">
+                                            <h4 className="text-lg font-semibold text-primary border-b border-gray-200 pb-2">
                                                 Personal Information
                                             </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        <FaUser className="inline mr-2 text-primary" />
-                                                        Username
-                                                    </label>
-                                                    <input
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaUser className="inline mr-2 text-secondary" />
+                                                                First Name
+                                                            </span>
+                                                        }
+                                                        type="text"
+                                                        name="firstName"
+                                                        value={formData.firstName}
+                                                        onChange={handleChange}
+                                                        disabled={!isEditing}
+                                                        placeholder="Enter your first name"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaUser className="inline mr-2 text-secondary" />
+                                                                Last Name
+                                                            </span>
+                                                        }
+                                                        type="text"
+                                                        name="lastName"
+                                                        value={formData.lastName}
+                                                        onChange={handleChange}
+                                                        disabled={!isEditing}
+                                                        placeholder="Enter your last name"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaUser className="inline mr-2 text-secondary" />
+                                                                Username
+                                                            </span>
+                                                        }
                                                         type="text"
                                                         name="username"
                                                         value={formData.username}
                                                         onChange={handleChange}
                                                         disabled={!isEditing}
-                                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                            isEditing 
-                                                                ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                        }`}
                                                     />
                                                 </div>
 
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        <FaEnvelope className="inline mr-2 text-primary" />
-                                                        Email Address
-                                                    </label>
-                                                    <input
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaEnvelope className="inline mr-2 text-secondary" />
+                                                                Email Address
+                                                            </span>
+                                                        }
                                                         type="email"
                                                         name="email"
                                                         value={formData.email}
                                                         onChange={handleChange}
                                                         disabled={!isEditing}
-                                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                            isEditing 
-                                                                ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                        }`}
                                                     />
                                                 </div>
 
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        <FaPhone className="inline mr-2 text-primary" />
-                                                        Phone Number
-                                                    </label>
-                                                    <input
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaPhone className="inline mr-2 text-secondary" />
+                                                                Phone Number
+                                                            </span>
+                                                        }
                                                         type="tel"
                                                         name="phone"
                                                         value={formData.phone}
                                                         onChange={handleChange}
                                                         disabled={!isEditing}
                                                         placeholder="+1 (555) 123-4567"
-                                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                            isEditing 
-                                                                ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                        }`}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Address Information */}
-                                        <div className="space-y-6">
-                                            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
-                                                <FaMapMarkerAlt className="inline mr-2 text-primary" />
+                                        <div className="space-y-4">
+                                            <h4 className="text-lg font-semibold text-primary border-b border-gray-200 pb-2">
+                                                <FaMapMarkerAlt className="inline mr-2 text-secondary" />
                                                 Address Information
                                             </h4>
                                             
                                             <div className="space-y-4">
                                                 {/* Street Address */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        <FaHome className="inline mr-2 text-primary" />
-                                                        Street Address
-                                                    </label>
-                                                    <input
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaHome className="inline mr-2 text-secondary" />
+                                                                Street Address
+                                                            </span>
+                                                        }
                                                         type="text"
                                                         name="address.streetAddress"
                                                         value={formData.address.streetAddress}
                                                         onChange={handleChange}
                                                         disabled={!isEditing}
                                                         placeholder="123 Main Street"
-                                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                            isEditing 
-                                                                ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                        }`}
                                                     />
                                                 </div>
 
                                                 {/* Apartment/Suite */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        <FaBuilding className="inline mr-2 text-primary" />
-                                                        Apartment, suite, etc. (optional)
-                                                    </label>
-                                                    <input
+                                                    <Input
+                                                        label={
+                                                            <span>
+                                                                <FaBuilding className="inline mr-2 text-secondary" />
+                                                                Apartment, suite, etc. (optional)
+                                                            </span>
+                                                        }
                                                         type="text"
                                                         name="address.apartment"
                                                         value={formData.address.apartment}
                                                         onChange={handleChange}
                                                         disabled={!isEditing}
                                                         placeholder="Apt 4B"
-                                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                            isEditing 
-                                                                ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                        }`}
                                                     />
                                                 </div>
 
                                                 {/* City, State, Country Row */}
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            City
-                                                        </label>
-                                                        <input
+                                                        <Input
+                                                            label="City"
                                                             type="text"
                                                             name="address.city"
                                                             value={formData.address.city}
                                                             onChange={handleChange}
                                                             disabled={!isEditing}
                                                             placeholder="New York"
-                                                            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                                isEditing 
-                                                                    ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                    : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                            }`}
                                                         />
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            State/Province
-                                                        </label>
-                                                        <input
+                                                        <Input
+                                                            label="State/Province"
                                                             type="text"
                                                             name="address.state"
                                                             value={formData.address.state}
                                                             onChange={handleChange}
                                                             disabled={!isEditing}
                                                             placeholder="NY"
-                                                            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                                isEditing 
-                                                                    ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                    : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                            }`}
                                                         />
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            <FaGlobe className="inline mr-2 text-primary" />
-                                                            Country
-                                                        </label>
-                                                        <select
+                                                        <Input
+                                                            label={
+                                                                <span>
+                                                                    <FaGlobe className="inline mr-2 text-secondary" />
+                                                                    Country
+                                                                </span>
+                                                            }
+                                                            type="text"
                                                             name="address.country"
                                                             value={formData.address.country}
                                                             onChange={handleChange}
                                                             disabled={!isEditing}
-                                                            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                                isEditing 
-                                                                    ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                    : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                            }`}
-                                                        >
-                                                            <option value="">Select Country</option>
-                                                            <option value="US">United States</option>
-                                                            <option value="CA">Canada</option>
-                                                            <option value="UK">United Kingdom</option>
-                                                            <option value="AU">Australia</option>
-                                                            <option value="DE">Germany</option>
-                                                            <option value="FR">France</option>
-                                                            <option value="IN">India</option>
-                                                            <option value="JP">Japan</option>
-                                                            <option value="BR">Brazil</option>
-                                                            <option value="MX">Mexico</option>
-                                                        </select>
+                                                            placeholder="United States"
+                                                        />
                                                     </div>
                                                 </div>
 
                                                 {/* ZIP/Postal Code */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        ZIP/Postal Code
-                                                    </label>
-                                                    <input
+                                                    <Input
+                                                        label="ZIP/Postal Code"
                                                         type="text"
                                                         name="address.zipCode"
                                                         value={formData.address.zipCode}
                                                         onChange={handleChange}
                                                         disabled={!isEditing}
                                                         placeholder="10001"
-                                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
-                                                            isEditing 
-                                                                ? 'border-gray-300 focus:border-primary bg-white' 
-                                                                : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                        }`}
                                                     />
                                                 </div>
                                             </div>
@@ -493,7 +493,7 @@ const UserProfile = () => {
                         </div>
                     ) : (
                         /* Orders Tab */
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <OrderHistory />
                         </div>
                     )}

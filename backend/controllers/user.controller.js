@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 const jwtService = require('../services/jwt.service');
 
 const registerUser = async (req, res) => {
-    const { username, password, email, phone, address, avatar } = req.body
+    const { username, password, email, phone, address, avatar, firstName, lastName } = req.body
 
     try {
         // Generate a unique customer ID for Razorpay
@@ -13,6 +13,8 @@ const registerUser = async (req, res) => {
         const userData = { username, password, email, customer_id };
         
         // Add optional fields if provided
+        if (firstName !== undefined) userData.firstName = firstName;
+        if (lastName !== undefined) userData.lastName = lastName;
         if (phone !== undefined) userData.phone = phone;
         if (address !== undefined) userData.address = address;
         if (avatar !== undefined) userData.avatar = avatar;
@@ -81,6 +83,8 @@ const loginUser = async (req, res) => {
         const token = jwtService.generateAccessToken({ 
             id: user._id,
             username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
             email: user.email,
             customer_id: user.customer_id
         });
@@ -230,6 +234,8 @@ const testUserProfile = async (req, res) => {
         // Test creating a user with all fields
         const testUserData = {
             username: 'testuser',
+            firstName: 'Test',
+            lastName: 'User',
             email: 'test@example.com',
             password: 'testpass123',
             phone: '+1234567890',

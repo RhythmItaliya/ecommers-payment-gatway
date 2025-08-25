@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { BsHeart, BsBag } from "react-icons/bs";
-import { addToCart } from "../redux/cartAction";
-import { addToWishlist, removeFromWishlist } from "../redux/wishlistAction";
-import { formatINRPrice } from "../utils/currency";
-import Login from "../auth/Login";
-import Register from "../auth/Register";
+import { addToCart } from "../../redux/cartAction";
+import { addToWishlist, removeFromWishlist } from "../../redux/wishlistAction";
+import { formatINRPrice } from "../../utils/currency";
+import Login from "../../auth/Login";
+import Register from "../../auth/Register";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   
@@ -53,6 +55,13 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  const handleTitleClick = () => {
+    const productId = product.id || product._id;
+    if (productId) {
+      navigate(`/product/${productId}`);
+    }
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
@@ -79,7 +88,13 @@ const ProductCard = ({ product }) => {
 
         {/* Info */}
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 truncate">{product.title}</h3>
+          <h3 
+            className="font-semibold text-gray-900 mb-2 truncate cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={handleTitleClick}
+            title="Click to view details"
+          >
+            {product.title}
+          </h3>
           
           <div className="flex items-center justify-between mb-3">
             <span className="text-lg font-bold text-blue-600">{formatINRPrice(product.price)}</span>

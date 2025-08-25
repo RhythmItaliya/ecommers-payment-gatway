@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { hideToast } from '../redux/toastAction';
+import { hideToast } from '../../redux/toastAction';
 import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimes, FaExclamationCircle } from 'react-icons/fa';
 
 const Toast = ({ toast }) => {
