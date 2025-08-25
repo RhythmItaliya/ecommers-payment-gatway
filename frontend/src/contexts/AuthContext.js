@@ -1,30 +1,28 @@
-import React, { createContext } from "react";
+import React, { createContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../redux/authAction';
 import { clearAllData } from '../utils/storeUtils';
 
-// Create context
 export const AuthContext = createContext();
 
-// Provider component
 export const AuthProvider = ({ children }) => {
     const dispatch = useDispatch();
-    const { isLoggedIn, loading, user } = useSelector(state => state.auth);
+    const { isLoggedIn, loading, user } = useSelector((state) => state.auth);
 
     const handleLogout = () => {
-        // Dispatch logout action which handles both localStorage and cookies
         dispatch(logoutUser());
-        // Clear all Redux stores and localStorage
         clearAllData(dispatch);
     };
 
     return (
-        <AuthContext.Provider value={{ 
-            isLoggedIn, 
-            loading, 
-            user,
-            logout: handleLogout 
-        }}>
+        <AuthContext.Provider
+            value={{
+                isLoggedIn,
+                loading,
+                user,
+                logout: handleLogout,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

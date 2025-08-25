@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaSignOutAlt, FaGlobe, FaBuilding, FaHome, FaShoppingBag } from 'react-icons/fa';
+import {
+    FaUser,
+    FaEnvelope,
+    FaPhone,
+    FaMapMarkerAlt,
+    FaEdit,
+    FaSignOutAlt,
+    FaGlobe,
+    FaBuilding,
+    FaHome,
+    FaShoppingBag,
+} from 'react-icons/fa';
 import { logoutUser } from '../../redux/authAction';
 import { updateUserProfile } from '../../redux/authAction';
 import { showSuccessToast, showErrorToast } from '../../redux/toastAction';
@@ -12,8 +23,8 @@ import { Input, Button, LoadingSpinner } from '../ui';
 const UserProfile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { user, isLoggedIn, loading } = useSelector(state => state.auth);
-    
+    const { user, isLoggedIn, loading } = useSelector((state) => state.auth);
+
     const [activeTab, setActiveTab] = useState('profile');
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -28,9 +39,9 @@ const UserProfile = () => {
             city: '',
             state: '',
             country: '',
-            zipCode: ''
+            zipCode: '',
         },
-        avatar: ''
+        avatar: '',
     });
 
     useEffect(() => {
@@ -52,9 +63,9 @@ const UserProfile = () => {
                     city: user.address?.city || '',
                     state: user.address?.state || '',
                     country: user.address?.country || '',
-                    zipCode: user.address?.zipCode || ''
+                    zipCode: user.address?.zipCode || '',
                 },
-                avatar: user.avatar || ''
+                avatar: user.avatar || '',
             });
         }
     }, [user, isLoggedIn, navigate]);
@@ -63,79 +74,69 @@ const UserProfile = () => {
         const { name, value } = e.target;
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
                 [parent]: {
                     ...prev[parent],
-                    [child]: value
-                }
+                    [child]: value,
+                },
             }));
         } else {
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
-                [name]: value
+                [name]: value,
             }));
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Basic frontend validation
+
         if (!formData.username.trim()) {
             dispatch(showErrorToast('Username is required'));
             return;
         }
-        
+
         if (!formData.email.trim()) {
             dispatch(showErrorToast('Email is required'));
             return;
         }
-        
-        // Basic email validation
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             dispatch(showErrorToast('Please enter a valid email address'));
             return;
         }
-        
+
         try {
-            // Prepare the data to update
             const updateData = {
                 username: formData.username.trim(),
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 email: formData.email.trim(),
                 phone: formData.phone.trim(),
-                address: formData.address
+                address: formData.address,
             };
-            
-            // Dispatch the update action
+
             const result = await dispatch(updateUserProfile(updateData));
-            
+
             if (updateUserProfile.fulfilled.match(result)) {
-                // Update successful
                 setIsEditing(false);
                 dispatch(showSuccessToast('Profile updated successfully!'));
             } else if (updateUserProfile.rejected.match(result)) {
-                // Update failed - show error toast
                 let errorMessage = 'Failed to update profile';
-                
+
                 if (result.payload) {
-                    // Handle different types of errors
                     if (result.payload.errors && Array.isArray(result.payload.errors)) {
-                        // Multiple validation errors
                         errorMessage = result.payload.errors.join(', ');
                     } else if (result.payload.message) {
-                        // Single error message
                         errorMessage = result.payload.message;
                     }
                 }
-                
+
                 dispatch(showErrorToast(errorMessage));
             }
         } catch (error) {
-            console.error('Profile update error:', error);
             dispatch(showErrorToast('An error occurred while updating your profile'));
         }
     };
@@ -143,17 +144,14 @@ const UserProfile = () => {
     const handleLogout = async () => {
         try {
             const result = await dispatch(logoutUser());
-            
+
             if (logoutUser.fulfilled.match(result)) {
-                // Clear all Redux stores and localStorage
                 clearAllData(dispatch);
                 dispatch(showSuccessToast('Logged out successfully!'));
             }
-            
+
             navigate('/');
         } catch (error) {
-            console.error('Logout error:', error);
-            // Even if logout fails, clear all stores
             clearAllData(dispatch);
         }
     };
@@ -172,9 +170,9 @@ const UserProfile = () => {
                     city: user.address?.city || '',
                     state: user.address?.state || '',
                     country: user.address?.country || '',
-                    zipCode: user.address?.zipCode || ''
+                    zipCode: user.address?.zipCode || '',
                 },
-                avatar: user.avatar || ''
+                avatar: user.avatar || '',
             });
         }
         setIsEditing(false);
@@ -188,14 +186,13 @@ const UserProfile = () => {
         <div className="min-h-screen bg-gray-50 pt-20">
             <div className="container mx-auto px-4 py-6">
                 <div className="max-w-5xl mx-auto">
-                    {/* Header */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-bold text-primary">
-                                    My Profile
-                                </h1>
-                                <p className="text-neutral text-sm mt-1">Manage your account settings and preferences</p>
+                                <h1 className="text-2xl font-bold text-primary">My Profile</h1>
+                                <p className="text-neutral text-sm mt-1">
+                                    Manage your account settings and preferences
+                                </p>
                             </div>
                             <Button
                                 variant="primary"
@@ -209,7 +206,6 @@ const UserProfile = () => {
                         </div>
                     </div>
 
-                    {/* Tab Navigation */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                         <div className="flex space-x-1">
                             <Button
@@ -235,21 +231,21 @@ const UserProfile = () => {
 
                     {activeTab === 'profile' ? (
                         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                            {/* Profile Card */}
                             <div className="lg:col-span-1">
                                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
                                     <div className="text-center">
                                         <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold">
-                                            {user?.firstName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                                            {user?.firstName?.charAt(0)?.toUpperCase() ||
+                                                user?.username?.charAt(0)?.toUpperCase() ||
+                                                'U'}
                                         </div>
                                         <h2 className="text-xl font-bold text-primary mb-2">
-                                            {user?.firstName && user?.lastName 
-                                                ? `${user.firstName} ${user.lastName}` 
-                                                : user?.username || 'User'
-                                            }
+                                            {user?.firstName && user?.lastName
+                                                ? `${user.firstName} ${user.lastName}`
+                                                : user?.username || 'User'}
                                         </h2>
                                         <p className="text-neutral text-sm mb-4">{user?.email || 'user@example.com'}</p>
-                                        
+
                                         {!isEditing && (
                                             <Button
                                                 variant="primary"
@@ -265,18 +261,13 @@ const UserProfile = () => {
                                 </div>
                             </div>
 
-                            {/* Profile Details */}
                             <div className="lg:col-span-3">
                                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                                     <div className="flex items-center justify-between mb-6">
                                         <h3 className="text-xl font-bold text-primary">Profile Information</h3>
                                         {isEditing && (
                                             <div className="flex space-x-3">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={handleCancelEdit}
-                                                >
+                                                <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
                                                     Cancel
                                                 </Button>
                                                 <Button
@@ -292,9 +283,8 @@ const UserProfile = () => {
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     <form id="profile-form" onSubmit={handleSubmit} className="space-y-6">
-                                        {/* Personal Information */}
                                         <div className="space-y-4">
                                             <h4 className="text-lg font-semibold text-primary border-b border-gray-200 pb-2">
                                                 Personal Information
@@ -385,15 +375,13 @@ const UserProfile = () => {
                                             </div>
                                         </div>
 
-                                        {/* Address Information */}
                                         <div className="space-y-4">
                                             <h4 className="text-lg font-semibold text-primary border-b border-gray-200 pb-2">
                                                 <FaMapMarkerAlt className="inline mr-2 text-secondary" />
                                                 Address Information
                                             </h4>
-                                            
+
                                             <div className="space-y-4">
-                                                {/* Street Address */}
                                                 <div>
                                                     <Input
                                                         label={
@@ -411,7 +399,6 @@ const UserProfile = () => {
                                                     />
                                                 </div>
 
-                                                {/* Apartment/Suite */}
                                                 <div>
                                                     <Input
                                                         label={
@@ -429,7 +416,6 @@ const UserProfile = () => {
                                                     />
                                                 </div>
 
-                                                {/* City, State, Country Row */}
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div>
                                                         <Input
@@ -473,7 +459,6 @@ const UserProfile = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* ZIP/Postal Code */}
                                                 <div>
                                                     <Input
                                                         label="ZIP/Postal Code"
@@ -492,7 +477,6 @@ const UserProfile = () => {
                             </div>
                         </div>
                     ) : (
-                        /* Orders Tab */
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <OrderHistory />
                         </div>

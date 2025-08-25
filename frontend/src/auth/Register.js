@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../redux/authAction';
 import { showSuccessToast, showErrorToast } from '../redux/toastAction';
@@ -11,11 +11,11 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
         firstName: '',
         lastName: '',
         email: '',
-        password: ''
+        password: '',
     });
-    
+
     const dispatch = useDispatch();
-    const { loading } = useSelector(state => state.auth);
+    const { loading } = useSelector((state) => state.auth);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,78 +23,71 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Basic frontend validation
+
         if (!formData.username.trim()) {
             dispatch(showErrorToast('Username is required'));
             return;
         }
-        
+
         if (!formData.firstName.trim()) {
             dispatch(showErrorToast('First name is required'));
             return;
         }
-        
+
         if (!formData.lastName.trim()) {
             dispatch(showErrorToast('Last name is required'));
             return;
         }
-        
+
         if (!formData.email.trim()) {
             dispatch(showErrorToast('Email is required'));
             return;
         }
-        
-        // Basic email validation
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             dispatch(showErrorToast('Please enter a valid email address'));
             return;
         }
-        
+
         if (!formData.password.trim()) {
             dispatch(showErrorToast('Password is required'));
             return;
         }
-        
+
         if (formData.password.length < 5) {
             dispatch(showErrorToast('Password must be at least 5 characters long'));
             return;
         }
-        
+
         try {
-            // Trim the form data before sending
             const cleanFormData = {
                 username: formData.username.trim(),
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 email: formData.email.trim(),
-                password: formData.password
+                password: formData.password,
             };
-            
+
             const result = await dispatch(registerUser(cleanFormData));
-            
+
             if (registerUser.fulfilled.match(result)) {
                 dispatch(showSuccessToast('Registration successful! You can now login.'));
                 onClose();
             } else if (registerUser.rejected.match(result)) {
                 let errorMessage = 'Registration failed. Please try again.';
-                
+
                 if (result.payload) {
-                    // Handle different types of errors
                     if (result.payload.errors && Array.isArray(result.payload.errors)) {
-                        // Multiple validation errors
                         errorMessage = result.payload.errors.join(', ');
                     } else if (result.payload.message) {
-                        // Single error message
                         errorMessage = result.payload.message;
                     }
                 }
-                
+
                 dispatch(showErrorToast(errorMessage));
             }
         } catch (error) {
-            console.error('Registration error:', error);
             dispatch(showErrorToast('An error occurred during registration'));
         }
     };
@@ -103,7 +96,9 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className={`bg-white p-8 rounded-xl shadow-2xl max-w-md w-full relative ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            <div
+                className={`bg-white p-8 rounded-xl shadow-2xl max-w-md w-full relative ${loading ? 'cursor-not-allowed' : ''}`}
+            >
                 <button
                     type="button"
                     onClick={onClose}
@@ -112,7 +107,6 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
                     <FaTimes size={20} />
                 </button>
                 <h2 className="text-2xl font-bold text-primary mb-6">Register</h2>
-                {/* Error messages now handled by toast notifications */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <Input
@@ -187,7 +181,17 @@ const Register = ({ isOpen, onClose, onLoginClick }) => {
                         </Button>
                     </div>
                     <div className="text-sm font-medium text-neutral text-center">
-                        Already registered? <button type="button" onClick={() => { onClose(); onLoginClick(); }} className="text-accent hover:text-accent/80 transition-colors">Login to your account</button>
+                        Already registered?{' '}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose();
+                                onLoginClick();
+                            }}
+                            className="text-accent hover:text-accent/80 transition-colors"
+                        >
+                            Login to your account
+                        </button>
                     </div>
                 </form>
             </div>

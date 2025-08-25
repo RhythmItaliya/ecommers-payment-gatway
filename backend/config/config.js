@@ -41,7 +41,8 @@ const config = {
       orders: process.env.ADMIN_PERMISSION_ORDERS !== 'false',
       products: process.env.ADMIN_PERMISSION_PRODUCTS !== 'false',
       payments: process.env.ADMIN_PERMISSION_PAYMENTS !== 'false',
-      settings: process.env.ADMIN_PERMISSION_SETTINGS !== 'false'
+      settings: process.env.ADMIN_PERMISSION_SETTINGS !== 'false',
+      contacts: process.env.ADMIN_PERMISSION_CONTACTS !== 'false'
     }
   }
 };

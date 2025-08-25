@@ -3,51 +3,45 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-// Async thunks
-export const fetchWishlist = createAsyncThunk(
-    'wishlist/fetchWishlist',
-    async (_, { rejectWithValue }) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('No token found');
-            }
-            
-            const response = await axios.get(`${API_URL}/wishlist`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch wishlist');
+export const fetchWishlist = createAsyncThunk('wishlist/fetchWishlist', async (_, { rejectWithValue }) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found');
         }
-    }
-);
 
-export const addToWishlist = createAsyncThunk(
-    'wishlist/addToWishlist',
-    async (productId, { rejectWithValue }) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('No token found');
-            }
-            
-            const response = await axios.post(`${API_URL}/wishlist/add`, 
-                { productId },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to add to wishlist');
-        }
+        const response = await axios.get(`${API_URL}/wishlist`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to fetch wishlist');
     }
-);
+});
+
+export const addToWishlist = createAsyncThunk('wishlist/addToWishlist', async (productId, { rejectWithValue }) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found');
+        }
+
+        const response = await axios.post(
+            `${API_URL}/wishlist/add`,
+            { productId },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to add to wishlist');
+    }
+});
 
 export const removeFromWishlist = createAsyncThunk(
     'wishlist/removeFromWishlist',
@@ -57,11 +51,11 @@ export const removeFromWishlist = createAsyncThunk(
             if (!token) {
                 throw new Error('No token found');
             }
-            
+
             const response = await axios.delete(`${API_URL}/wishlist/remove/${productId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
             return response.data;
         } catch (error) {
@@ -70,26 +64,23 @@ export const removeFromWishlist = createAsyncThunk(
     }
 );
 
-export const clearWishlist = createAsyncThunk(
-    'wishlist/clearWishlist',
-    async (_, { rejectWithValue }) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('No token found');
-            }
-            
-            const response = await axios.delete(`${API_URL}/wishlist/clear`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to clear wishlist');
+export const clearWishlist = createAsyncThunk('wishlist/clearWishlist', async (_, { rejectWithValue }) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found');
         }
+
+        const response = await axios.delete(`${API_URL}/wishlist/clear`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to clear wishlist');
     }
-);
+});
 
 export const checkWishlistStatus = createAsyncThunk(
     'wishlist/checkWishlistStatus',
@@ -99,11 +90,11 @@ export const checkWishlistStatus = createAsyncThunk(
             if (!token) {
                 throw new Error('No token found');
             }
-            
+
             const response = await axios.get(`${API_URL}/wishlist/check/${productId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
             return response.data;
         } catch (error) {
@@ -112,7 +103,6 @@ export const checkWishlistStatus = createAsyncThunk(
     }
 );
 
-// Legacy actions for backward compatibility
 export const ADD_TO_WISHLIST = 'ADD_TO_WISHLIST';
 export const REMOVE_FROM_WISHLIST = 'REMOVE_FROM_WISHLIST';
 export const CLEAR_WISHLIST = 'CLEAR_WISHLIST';

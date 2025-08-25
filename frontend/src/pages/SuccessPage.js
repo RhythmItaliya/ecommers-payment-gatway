@@ -9,7 +9,7 @@ import { LoadingSpinner, ErrorState } from '../components/ui';
 const SuccessPage = () => {
     const location = useLocation();
     const { paymentIntentId, paymentMethod = 'Razorpay', orderDetails } = location.state || {};
-    const token = useSelector(state => state.auth.token);
+    const token = useSelector((state) => state.auth.token);
 
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -25,26 +25,23 @@ const SuccessPage = () => {
             try {
                 let response;
                 if (paymentMethod === 'Razorpay') {
-                    // For Razorpay, use the payment ID endpoint
                     response = await axios.get(`${process.env.REACT_APP_API_URL}/razorpay/payment/${paymentIntentId}`, {
                         headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
                     });
                     setPaymentStatus(response.data.payment);
                 } else {
-                    // For other payment methods, use the razorpay endpoint
                     response = await axios.get(`${process.env.REACT_APP_API_URL}/razorpay/payment/${paymentIntentId}`, {
                         headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
                     });
                     setPaymentStatus(response.data.payment);
                 }
             } catch (error) {
-                console.error('Error fetching payment status:', error);
                 setError('Failed to fetch payment details. Please try again.');
             } finally {
                 setLoading(false);
@@ -67,10 +64,7 @@ const SuccessPage = () => {
     if (error) {
         return (
             <div className="container mx-auto px-4 py-16">
-                <ErrorState 
-                    error={error} 
-                    onRetry={() => setError(null)}
-                />
+                <ErrorState error={error} onRetry={() => setError(null)} />
             </div>
         );
     }
@@ -94,54 +88,58 @@ const SuccessPage = () => {
                     <h4 className="text-2xl font-semibold mb-6">Payment Details</h4>
                     {paymentStatus ? (
                         <div className="space-y-4">
-                            {paymentMethod === 'Razorpay' ? (
-                                // Razorpay payment details
-                                [
-                                    { label: 'Payment ID', value: paymentStatus.id },
-                                    { label: 'Amount', value: `₹${(paymentStatus.amount / 100).toFixed(2)}` },
-                                    { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
-                                    { label: 'Status', value: paymentStatus.status },
-                                    { label: 'Payment Method', value: paymentStatus.method || 'Razorpay' },
-                                    { label: 'Created At', value: new Date(paymentStatus.created_at * 1000).toLocaleString() },
-                                ].map(({ label, value }) => (
-                                    <div key={label} className="flex items-center space-x-4 border-b border-gray-200 pb-3">
-                                        <span className="font-semibold w-1/3 text-gray-900">{label}</span>
-                                        <div className="w-2/3 overflow-x-auto">
-                                            <span>{value}</span>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                // Other payment method details
-                                [
-                                    { label: 'Payment ID', value: paymentStatus.id },
-                                    { label: 'Amount', value: `₹${(paymentStatus.amount / 100).toFixed(2)}` },
-                                    { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
-                                    { label: 'Status', value: paymentStatus.status },
-                                    { label: 'Payment Method', value: 'Razorpay' },
-                                ].map(({ label, value }) => (
-                                    <div key={label} className="flex items-center space-x-4 border-b border-gray-200 pb-3">
-                                        <span className="font-semibold w-1/3 text-gray-900">{label}</span>
-                                        <div className="w-2/3 overflow-x-auto">
-                                            {label === 'Redirect URL' ? (
-                                                <a
-                                                    href={value}
-                                                    className="text-blue-500 truncate"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    {value}
-                                                </a>
-                                            ) : (
-                                                <span>{value}</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                            {paymentMethod === 'Razorpay'
+                                ? [
+                                      { label: 'Payment ID', value: paymentStatus.id },
+                                      { label: 'Amount', value: `₹${(paymentStatus.amount / 100).toFixed(2)}` },
+                                      { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
+                                      { label: 'Status', value: paymentStatus.status },
+                                      { label: 'Payment Method', value: paymentStatus.method || 'Razorpay' },
+                                      {
+                                          label: 'Created At',
+                                          value: new Date(paymentStatus.created_at * 1000).toLocaleString(),
+                                      },
+                                  ].map(({ label, value }) => (
+                                      <div
+                                          key={label}
+                                          className="flex items-center space-x-4 border-b border-gray-200 pb-3"
+                                      >
+                                          <span className="font-semibold w-1/3 text-gray-900">{label}</span>
+                                          <div className="w-2/3 overflow-x-auto">
+                                              <span>{value}</span>
+                                          </div>
+                                      </div>
+                                  ))
+                                : [
+                                      { label: 'Payment ID', value: paymentStatus.id },
+                                      { label: 'Amount', value: `₹${(paymentStatus.amount / 100).toFixed(2)}` },
+                                      { label: 'Currency', value: paymentStatus.currency.toUpperCase() },
+                                      { label: 'Status', value: paymentStatus.status },
+                                      { label: 'Payment Method', value: 'Razorpay' },
+                                  ].map(({ label, value }) => (
+                                      <div
+                                          key={label}
+                                          className="flex items-center space-x-4 border-b border-gray-200 pb-3"
+                                      >
+                                          <span className="font-semibold w-1/3 text-gray-900">{label}</span>
+                                          <div className="w-2/3 overflow-x-auto">
+                                              {label === 'Redirect URL' ? (
+                                                  <a
+                                                      href={value}
+                                                      className="text-blue-500 truncate"
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                  >
+                                                      {value}
+                                                  </a>
+                                              ) : (
+                                                  <span>{value}</span>
+                                              )}
+                                          </div>
+                                      </div>
+                                  ))}
                         </div>
                     ) : orderDetails ? (
-                        // Show basic order details when payment details are not available
                         <div className="space-y-4">
                             {[
                                 { label: 'Order ID', value: orderDetails.orderId },

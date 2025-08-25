@@ -2,6 +2,7 @@ const User = require('../models/user.model');
 const Cart = require('../models/cart.model');
 const PaymentMethod = require('../models/paymentMethod.model');
 const Product = require('../models/product.model');
+const Contact = require('../models/contact.model');
 const config = require('../config/config');
 
 // Admin Dashboard API
@@ -12,6 +13,8 @@ const getDashboard = async (req, res) => {
         const totalCarts = await Cart.countDocuments();
         const totalPaymentMethods = await PaymentMethod.countDocuments();
         const totalProducts = await Product.countDocuments();
+        const totalContacts = await Contact.countDocuments();
+        const pendingContacts = await Contact.countDocuments({ status: 'pending' });
 
         // Get recent users
         const recentUsers = await User.find()
@@ -31,6 +34,12 @@ const getDashboard = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5);
 
+        // Get recent contacts
+        const recentContacts = await Contact.find()
+            .select('name email status createdAt')
+            .sort({ createdAt: -1 })
+            .limit(5);
+
         res.json({
             success: true,
             data: {
@@ -38,11 +47,14 @@ const getDashboard = async (req, res) => {
                     totalUsers,
                     totalCarts,
                     totalPaymentMethods,
-                    totalProducts
+                    totalProducts,
+                    totalContacts,
+                    pendingContacts
                 },
                 recentUsers,
                 recentCarts,
-                recentProducts
+                recentProducts,
+                recentContacts
             }
         });
     } catch (error) {
@@ -347,6 +359,134 @@ const updateUserStatus = async (req, res) => {
     }
 };
 
+// Contact Management API
+const getContacts = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, status } = req.query;
+        
+        const query = {};
+        if (status && ['pending', 'read', 'replied'].includes(status)) {
+            query.status = status;
+        }
+
+        const contacts = await Contact.find(query)
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .select('-__v');
+
+        const total = await Contact.countDocuments(query);
+
+        res.json({
+            success: true,
+            data: contacts,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / limit),
+                totalContacts: total,
+                hasNext: page * limit < total,
+                hasPrev: page > 1
+            }
+        });
+
+    } catch (error) {
+        console.error('Get contacts error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch contacts'
+        });
+    }
+};
+
+const getContactDetails = async (req, res) => {
+    try {
+        const contact = await Contact.findById(req.params.contactId).select('-__v');
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: contact
+        });
+
+    } catch (error) {
+        console.error('Get contact error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch contact'
+        });
+    }
+};
+
+const updateContactStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        
+        if (!['pending', 'read', 'replied'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Must be pending, read, or replied'
+            });
+        }
+
+        const contact = await Contact.findByIdAndUpdate(
+            req.params.contactId,
+            { status },
+            { new: true, runValidators: true }
+        ).select('-__v');
+
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Contact status updated successfully',
+            data: contact
+        });
+
+    } catch (error) {
+        console.error('Update contact status error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update contact status'
+        });
+    }
+};
+
+const deleteContact = async (req, res) => {
+    try {
+        const contact = await Contact.findByIdAndDelete(req.params.contactId);
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Contact deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Delete contact error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete contact'
+        });
+    }
+};
+
 module.exports = {
     getDashboard,
     getUsers,
@@ -358,5 +498,9 @@ module.exports = {
     deleteProduct,
     getSettings,
     deleteUser,
-    updateUserStatus
+    updateUserStatus,
+    getContacts,
+    getContactDetails,
+    updateContactStatus,
+    deleteContact
 };

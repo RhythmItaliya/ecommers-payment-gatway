@@ -24,4 +24,10 @@ router.delete('/products/:productId', verifyAdminToken, checkPermission('product
 // System Settings API (protected)
 router.get('/settings', verifyAdminToken, checkPermission('settings'), adminController.getSettings);
 
+// Contact Management API (protected)
+router.get('/contacts', verifyAdminToken, checkPermission('contacts'), adminController.getContacts);
+router.get('/contacts/:contactId', verifyAdminToken, checkPermission('contacts'), adminController.getContactDetails);
+router.put('/contacts/:contactId/status', verifyAdminToken, checkPermission('contacts'), adminController.updateContactStatus);
+router.delete('/contacts/:contactId', verifyAdminToken, checkPermission('contacts'), adminController.deleteContact);
+
 module.exports = router;
