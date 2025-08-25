@@ -1,0 +1,42 @@
+<div class="max-w-md mx-auto">
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-extrabold text-gray-900">Login</h2>
+                <p class="mt-2 text-sm text-gray-600">Enter your credentials to access admin panel</p>
+            </div>
+            
+            <form action="/login" method="POST">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                            Sign in
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+
+        </div>
+        
+        <div class="bg-gray-50 px-4 py-5 sm:p-6 border-t border-gray-200">
+            <div class="text-sm text-gray-600">
+                <p class="font-medium mb-2 text-gray-800">Default Admin Credentials:</p>
+                <div class="space-y-1">
+                    <p>Email: <span class="font-mono text-gray-800 bg-gray-100 px-2 py-1 rounded">admin@snapshop.com</span></p>
+                    <p>Password: <span class="font-mono text-gray-800 bg-gray-100 px-2 py-1 rounded">admin123</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

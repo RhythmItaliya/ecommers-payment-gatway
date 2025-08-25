@@ -1,29 +1,9 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-    unique: true
-  },
-  title: {
-    type: String,
-    required: true
-  },
   name: {
     type: String,
     required: true
-  },
-  price: {
-    type: Number,
-    required: true
-  },
-  discount: {
-    type: Number,
-    default: 0
-  },
-  salePrice: {
-    type: Number
   },
   description: {
     type: String,
@@ -33,36 +13,44 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  higePrice: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0
+  },
   image: {
     type: String,
     required: true
   },
-  pictures: [{
-    type: String
-  }],
-  stock: {
-    type: Number,
-    default: 0
-  },
-  rating: {
-    rate: {
-      type: Number,
-      default: 0
-    },
-    count: {
-      type: Number,
-      default: 0
-    }
-  },
-  tags: [{
-    type: String
-  }],
-  size: [{
-    type: String
+  sizes: [{
+    type: String,
+    enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
   }],
   colors: [{
-    type: String
-  }]
+    type: String,
+    required: true
+  }],
+  gender: {
+    type: String,
+    enum: ['men', 'women', 'unisex'],
+    required: true
+  },
+  discount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
 }, {
   timestamps: true
 });

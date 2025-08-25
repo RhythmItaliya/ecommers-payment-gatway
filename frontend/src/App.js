@@ -23,6 +23,7 @@ import RazorpayPayment from './components/profile/RazorpayPayment';
 import SuccessPage from './pages/SuccessPage';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
+import About from './pages/About';
 
 const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -77,6 +78,7 @@ const App = () => {
                                     <Route path="/razorpay-payment" element={<RazorpayPayment />} />
                                     <Route path="/success" element={<SuccessPage />} />
                                     <Route path="/contact" element={<Contact />} />
+                                    <Route path="/about" element={<About />} />
                                     <Route path="*" element={<NotFound />} />
                                 </Routes>
                                 <Sidebar />

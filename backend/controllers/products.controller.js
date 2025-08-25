@@ -18,10 +18,9 @@ const getAllProducts = async (req, res) => {
       ];
     }
 
-    // Build sort query - handle both id and _id
     let sort = {};
     if (sortBy === 'id') {
-      sort.id = sortOrder === 'desc' ? -1 : 1;
+      sort._id = sortOrder === 'desc' ? -1 : 1;
     } else {
       sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
     }
@@ -109,10 +108,10 @@ const getProductsByCategory = async (req, res) => {
     const { category } = req.params;
     const { page = 1, limit = 20, sortBy = 'id', sortOrder = 'asc' } = req.query;
     
-    // Build sort query - handle both id and _id
+    // Build sort query - use _id for default sorting
     let sort = {};
     if (sortBy === 'id') {
-      sort.id = sortOrder === 'desc' ? -1 : 1;
+      sort._id = sortOrder === 'desc' ? -1 : 1;
     } else {
       sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
     }
@@ -168,17 +167,15 @@ const searchProducts = async (req, res) => {
     // Build search filter
     const filter = {
       $or: [
-        { title: { $regex: q, $options: 'i' } },
         { name: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { tags: { $in: [new RegExp(q, 'i')] } }
+        { description: { $regex: q, $options: 'i' } }
       ]
     };
 
-    // Build sort query - handle both id and _id
+    // Build sort query - use _id for default sorting
     let sort = {};
     if (sortBy === 'id') {
-      sort.id = sortOrder === 'desc' ? -1 : 1;
+      sort._id = sortOrder === 'desc' ? -1 : 1;
     } else {
       sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
     }

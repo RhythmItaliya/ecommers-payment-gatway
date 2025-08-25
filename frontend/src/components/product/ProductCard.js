@@ -33,10 +33,6 @@ const ProductCard = ({ product }) => {
     };
 
     const handleProductView = () => {
-        if (!isLoggedIn) {
-            dispatch(showWarningToast('Please login to view product details'));
-            return;
-        }
         handleTitleClick();
     };
 
@@ -44,11 +40,11 @@ const ProductCard = ({ product }) => {
         <>
             <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
                 <div className="relative">
-                    <img src={product.image} alt={product.title} className="w-full h-48 object-cover rounded-t-lg" />
+                    <img src={product.image} alt={product.name} className="w-full h-48 object-cover rounded-t-lg" />
 
-                    {product.price < 50 && (
+                    {product.discount > 0 && (
                         <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            SALE
+                            {product.discount}% OFF
                         </span>
                     )}
                 </div>
@@ -59,12 +55,26 @@ const ProductCard = ({ product }) => {
                         onClick={handleProductView}
                         title="Click to view details"
                     >
-                        {product.title}
+                        {product.name || 'Product Name'}
                     </h3>
 
                     <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-bold text-blue-600">{formatINRPrice(product.price)}</span>
-                        <span className="text-sm text-gray-500 capitalize">{product.category}</span>
+                        <div className="flex flex-col">
+                            <span className="text-lg font-bold text-blue-600">
+                                {formatINRPrice(product.price || 0)}
+                            </span>
+                            {product.discount > 0 && (
+                                <span className="text-sm text-gray-400 line-through">
+                                    {formatINRPrice(product.higePrice || product.price || 0)}
+                                </span>
+                            )}
+                        </div>
+                        <div className="text-right">
+                            <span className="text-sm text-gray-500 capitalize block">
+                                {product.category || 'Category'}
+                            </span>
+                            <span className="text-xs text-gray-400 capitalize">{product.gender || 'Gender'}</span>
+                        </div>
                     </div>
 
                     <button

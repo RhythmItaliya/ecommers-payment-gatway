@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protectedRoute } = require('../middlewares/protectedRoute');
+const Order = require('../models/order.model');
 const {
   createOrder,
   getUserOrders,
@@ -9,22 +10,43 @@ const {
   cancelOrder
 } = require('../controllers/order.controller');
 
-// Protected routes - require authentication
-router.use(protectedRoute);
+// Get all orders (public - for admin dashboard display)
+router.get('/', async (req, res) => {
+    try {
+        const orders = await Order.find()
+            .populate('userId', 'name email')
+            .populate('items.productId', 'name price')
+            .sort({ createdAt: -1 });
+        
+        // Debug logging
+        console.log('Orders API - Total orders found:', orders.length);
+        
+        res.json({
+            success: true,
+            data: orders
+        });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch orders'
+        });
+    }
+});
 
-// Create a new order
-router.post('/create', createOrder);
+// Create a new order (protected)
+router.post('/create', protectedRoute, createOrder);
 
-// Get user's orders with optional filtering
-router.get('/my-orders', getUserOrders);
+// Get user's orders with optional filtering (protected)
+router.get('/my-orders', protectedRoute, getUserOrders);
 
-// Get specific order by ID
-router.get('/:orderId', getOrderById);
+// Get specific order by ID (protected)
+router.get('/:orderId', protectedRoute, getOrderById);
 
-// Cancel order
-router.patch('/:orderId/cancel', cancelOrder);
+// Cancel order (protected)
+router.patch('/:orderId/cancel', protectedRoute, cancelOrder);
 
-// Update order status (admin only - you can add admin middleware here)
-router.patch('/:orderId/status', updateOrderStatus);
+// Update order status (public - no authentication required for admin dashboard)
+router.post('/:orderId/status', updateOrderStatus);
 
 module.exports = router;

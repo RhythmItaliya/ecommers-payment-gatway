@@ -1,0 +1,144 @@
+<div class="p-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Manage Users</h1>
+        <p class="text-gray-600">View all registered users and their order history - Total Users: <span id="userCount">0</span></p>
+    </div>
+    
+    <div id="usersTable" class="hidden">
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">All Users (<span id="tableUserCount">0</span>)</h3>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Users will be loaded here via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div id="noUsersMessage" class="text-center py-12 hidden">
+        <div class="mx-auto h-12 w-12 text-gray-400">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+            </svg>
+        </div>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+        <p class="mt-1 text-sm text-gray-500">Users will appear here when they register.</p>
+    </div>
+    
+    <div id="loadingMessage" class="text-center py-12">
+        <div class="mx-auto h-8 w-8 text-blue-600 animate-spin">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+        </div>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Loading users...</h3>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Fetch users from API
+        const response = await fetch('/api/users');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            const users = result.data;
+            
+            // Update user count
+            document.getElementById('userCount').textContent = users.length;
+            document.getElementById('tableUserCount').textContent = users.length;
+            
+            if (users.length > 0) {
+                // Show table and populate data
+                document.getElementById('usersTable').classList.remove('hidden');
+                document.getElementById('noUsersMessage').classList.add('hidden');
+                document.getElementById('loadingMessage').classList.add('hidden');
+                
+                const tableBody = document.getElementById('usersTableBody');
+                tableBody.innerHTML = '';
+                
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    // Username + email column
+                    const usernameCell = document.createElement('td');
+                    usernameCell.className = 'px-6 py-4';
+                    const fullName = (user.firstName || user.lastName)
+                        ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                        : (user.username || 'N/A');
+                    usernameCell.innerHTML = `
+                        <div class="text-sm font-medium text-gray-900">${fullName}</div>
+                        <div class="text-xs text-gray-500">@${user.username || 'unknown'}</div>
+                        <div class="text-xs text-gray-500">${user.email || 'no-email'}</div>
+                    `;
+                    
+                    // Phone number column
+                    const phoneCell = document.createElement('td');
+                    phoneCell.className = 'px-6 py-4';
+                    phoneCell.innerHTML = `
+                        <div class="text-sm text-gray-900">
+                            ${user.phone || 'N/A'}
+                        </div>
+                    `;
+                    
+                    // Orders column (total and cancelled)
+                    const ordersCell = document.createElement('td');
+                    ordersCell.className = 'px-6 py-4';
+                    ordersCell.innerHTML = `
+                        <div class="text-sm font-medium text-blue-600">${user.totalOrders || 0} Orders</div>
+                        <div class="text-xs text-gray-500">${user.cancelledOrders || 0} Cancelled</div>
+                    `;
+
+                    // Total spent column
+                    const spentCell = document.createElement('td');
+                    spentCell.className = 'px-6 py-4';
+                    const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+                    const totalSpentValue = typeof user.totalSpent === 'number' ? user.totalSpent : 0;
+                    spentCell.innerHTML = `
+                        <div class="text-sm font-medium text-gray-900">${currencyFormatter.format(totalSpentValue)}</div>
+                    `;
+                    
+                    row.appendChild(usernameCell);
+                    row.appendChild(phoneCell);
+                    row.appendChild(ordersCell);
+                    row.appendChild(spentCell);
+                    tableBody.appendChild(row);
+                });
+            } else {
+                // Show no users message
+                document.getElementById('usersTable').classList.add('hidden');
+                document.getElementById('noUsersMessage').classList.remove('hidden');
+                document.getElementById('loadingMessage').classList.add('hidden');
+            }
+        } else {
+            throw new Error('Failed to fetch users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('loadingMessage').innerHTML = `
+            <div class="mx-auto h-12 w-12 text-red-400">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Error loading users</h3>
+            <p class="mt-1 text-sm text-gray-500">Please try refreshing the page.</p>
+        `;
+    }
+});
+</script>

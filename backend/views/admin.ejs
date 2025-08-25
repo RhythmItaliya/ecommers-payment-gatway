@@ -1,0 +1,39 @@
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-gray-700">Total Products</h3>
+            <p class="text-3xl font-bold text-blue-600"><%= productCount || 0 %></p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-gray-700">Total Users</h3>
+            <p class="text-3xl font-bold text-green-600"><%= userCount || 0 %></p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-gray-700">Total Orders</h3>
+            <p class="text-3xl font-bold text-purple-600"><%= orderCount || 0 %></p>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Quick Actions</h3>
+        <div class="space-y-3">
+            <a href="/admin/products" class="block w-full text-left p-3 border rounded hover:bg-gray-50">
+                Manage Products
+            </a>
+            <a href="/admin/users" class="block w-full text-left p-3 border rounded hover:bg-gray-50">
+                Manage Users
+            </a>
+            <a href="/admin/orders" class="block w-full text-left p-3 border rounded hover:bg-gray-50">
+                View Orders
+            </a>
+        </div>
+    </div>
+    
+    <div class="mt-6 text-center">
+        <a href="/" class="text-blue-500 hover:underline">Back to Home</a>
+    </div>
+</div>

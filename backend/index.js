@@ -1,6 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
+const expressLayouts = require('express-ejs-layouts');
+const session = require('express-session');
 const { createDefaultAdmin } = require('./controllers/adminAuth.controller');
 const config = require('./config/config');
 
@@ -14,51 +17,52 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight requests explicitly
 app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Session middleware
+app.use(session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
+}));
+
+// EJS Configuration
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts);
+app.set('layout', 'layout');
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)
   .then(async () => {
-    console.log('Connected to MongoDB');
-    // Create default admin after successful connection
     await createDefaultAdmin();
   })
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+  });
 
 // Routes
 app.use('/api/user', require('./routes/user.routes'));
-app.use('/api/admin/auth', require('./routes/adminAuth.routes'));
-app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/cart', require('./routes/cart.routes'));
-
 app.use('/api/razorpay', require('./routes/razorpay.routes'));
-
 app.use('/api/wishlist', require('./routes/wishlist.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/products', require('./routes/products.routes'));
 app.use('/api/orders', require('./routes/order.routes'));
 app.use('/api/contact', require('./routes/contact.routes'));
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'SnapShop Backend is running' });
+app.get('/', (req, res) => {
+    res.redirect('/login');
 });
+
+app.use('/', require('./routes/admin.routes'));
 
 const PORT = config.port;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${config.nodeEnv}`);
-  console.log(`API Base URL: http://localhost:${PORT}/api`);
-  console.log(`Products API: http://localhost:${PORT}/api/products`);
-  console.log(`Admin API: http://localhost:${PORT}/api/admin`);
-  console.log(`User API: http://localhost:${PORT}/api/user`);
-  console.log(`Cart API: http://localhost:${PORT}/api/cart`);
-  console.log(`Razorpay API: http://localhost:${PORT}/api/razorpay`);
-  console.log(`Wishlist API: http://localhost:${PORT}/api/wishlist`);
-  console.log(`Upload API: http://localhost:${PORT}/api/upload`);
-  console.log(`Cloudinary: ${config.cloudinary.cloudName} (${config.cloudinary.folder})`);
+  console.log(`Admin dashboard: http://localhost:${PORT}`);
 });

@@ -27,16 +27,6 @@ const Header = () => {
     const navItems = [
         { key: 'home', label: 'Home', path: '/' },
         {
-            key: PRODUCT_CATEGORIES.NEW,
-            label: CATEGORY_LABELS[PRODUCT_CATEGORIES.NEW],
-            path: `/products?category=${PRODUCT_CATEGORIES.NEW}`,
-        },
-        {
-            key: PRODUCT_CATEGORIES.SALE,
-            label: CATEGORY_LABELS[PRODUCT_CATEGORIES.SALE],
-            path: `/products?category=${PRODUCT_CATEGORIES.SALE}`,
-        },
-        {
             key: PRODUCT_CATEGORIES.MEN,
             label: CATEGORY_LABELS[PRODUCT_CATEGORIES.MEN],
             path: `/products?category=${PRODUCT_CATEGORIES.MEN}`,
@@ -47,16 +37,17 @@ const Header = () => {
             path: `/products?category=${PRODUCT_CATEGORIES.WOMEN}`,
         },
         {
-            key: PRODUCT_CATEGORIES.LATEST,
-            label: CATEGORY_LABELS[PRODUCT_CATEGORIES.LATEST],
-            path: `/products?category=${PRODUCT_CATEGORIES.LATEST}`,
+            key: PRODUCT_CATEGORIES.SALE,
+            label: CATEGORY_LABELS[PRODUCT_CATEGORIES.SALE],
+            path: `/products?category=${PRODUCT_CATEGORIES.SALE}`,
         },
         { key: 'contact', label: 'Contact Us', path: '/contact' },
     ];
 
     const isActive = (item) => {
         if (item.key === 'home' && location.pathname === '/') return true;
-        if (item.key !== 'home' && location.pathname === '/products') {
+        if (item.key === 'contact' && location.pathname === '/contact') return true;
+        if (location.pathname === '/products') {
             const urlParams = new URLSearchParams(location.search);
             const categoryParam = urlParams.get('category');
             return categoryParam === item.key;
@@ -67,6 +58,12 @@ const Header = () => {
     const handleNavClick = (item) => {
         if (item.key === 'home') {
             navigate('/');
+        } else if (
+            item.key === PRODUCT_CATEGORIES.MEN ||
+            item.key === PRODUCT_CATEGORIES.WOMEN ||
+            item.key === PRODUCT_CATEGORIES.SALE
+        ) {
+            navigate(item.path);
         } else {
             navigate(item.path);
         }
@@ -76,7 +73,9 @@ const Header = () => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token && !isLoggedIn) {
-            dispatch(checkAuthStatus());
+            dispatch(checkAuthStatus()).catch(() => {
+                localStorage.removeItem('token');
+            });
         }
     }, [dispatch, isLoggedIn]);
 

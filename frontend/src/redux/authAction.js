@@ -50,6 +50,10 @@ export const checkAuthStatus = createAsyncThunk('auth/checkAuthStatus', async (_
 
         return result;
     } catch (error) {
+        // If token is invalid, remove it from localStorage
+        if (error.response?.status === 401 || error.response?.status === 404) {
+            localStorage.removeItem('token');
+        }
         return rejectWithValue('Authentication failed');
     }
 });

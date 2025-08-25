@@ -75,7 +75,7 @@ const ProductDetails = () => {
         );
     }
 
-    const { title, price, description, image, discount, salePrice, stock, category } = product;
+    const { name, price, higePrice, description, image, discount, stock, category, sizes, colors, gender } = product;
 
     const isInWishlist = wishlistItems.some((item) => {
         const itemProductId = item.productId?.id || item.productId;
@@ -171,11 +171,11 @@ const ProductDetails = () => {
                                     <img
                                         className="w-96 h-96 object-cover rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-105"
                                         src={image}
-                                        alt={title}
+                                        alt={name}
                                     />
                                     {discount > 0 && (
                                         <div className="absolute -top-4 -right-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                                            -{Math.round((discount / price) * 100)}%
+                                            -{discount}%
                                         </div>
                                     )}
                                 </div>
@@ -189,20 +189,20 @@ const ProductDetails = () => {
                                 </div>
 
                                 <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                                    {title}
+                                    {name}
                                 </h1>
 
                                 <div className="mb-8">
                                     {discount > 0 ? (
                                         <div className="flex items-center gap-4">
                                             <span className="text-4xl font-bold text-red-500">
-                                                {formatINRPrice(salePrice)}
-                                            </span>
-                                            <span className="text-2xl text-gray-400 line-through">
                                                 {formatINRPrice(price)}
                                             </span>
+                                            <span className="text-2xl text-gray-400 line-through">
+                                                {formatINRPrice(higePrice)}
+                                            </span>
                                             <span className="bg-red-100 text-red-600 text-sm font-semibold px-3 py-1 rounded-full">
-                                                Save {formatINRPrice(discount)}
+                                                {discount}% OFF
                                             </span>
                                         </div>
                                     ) : (
@@ -232,6 +232,46 @@ const ProductDetails = () => {
                                 <div className="mb-8">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
                                     <p className="text-gray-600 leading-relaxed text-base">{description}</p>
+                                </div>
+
+                                {/* Product Details */}
+                                <div className="mb-8 space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm font-medium text-gray-500">Gender:</span>
+                                        <span className="text-sm font-medium text-gray-900 capitalize">{gender}</span>
+                                    </div>
+
+                                    {sizes && sizes.length > 0 && (
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-sm font-medium text-gray-500">Available Sizes:</span>
+                                            <div className="flex gap-2">
+                                                {sizes.map((size, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                                                    >
+                                                        {size}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {colors && colors.length > 0 && (
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-sm font-medium text-gray-500">Available Colors:</span>
+                                            <div className="flex gap-2">
+                                                {colors.map((color, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                                                    >
+                                                        {color}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-4">

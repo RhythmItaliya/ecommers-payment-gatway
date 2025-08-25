@@ -23,25 +23,24 @@ const ProductProvider = ({ children }) => {
                 }
 
                 const transformedProducts = result.data.products.map((product) => ({
-                    id: product.id,
-                    title: product.title || product.name,
+                    id: product._id || product.id,
+                    _id: product._id,
+                    name: product.name,
+                    title: product.name,
                     price: product.price,
+                    higePrice: product.higePrice,
                     description: product.description,
                     category: product.category,
                     image:
                         product.image ||
-                        (product.pictures && product.pictures[0]) ||
-                        `https://via.placeholder.com/300x300?text=${encodeURIComponent(product.title || product.name)}`,
-                    rating: {
-                        rate: product.rating?.rate || 0,
-                        count: product.rating?.count || 0,
-                    },
+                        `https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name || 'Product')}`,
                     stock: product.stock || 0,
                     discount: product.discount || 0,
-                    salePrice: product.salePrice || product.price,
-                    tags: product.tags || [],
-                    size: product.size || [],
+                    gender: product.gender,
+                    sizes: product.sizes || [],
                     colors: product.colors || [],
+                    createdAt: product.createdAt,
+                    updatedAt: product.updatedAt,
                 }));
 
                 setProducts(transformedProducts);

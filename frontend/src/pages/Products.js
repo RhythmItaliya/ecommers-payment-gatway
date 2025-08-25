@@ -96,17 +96,19 @@ const Products = () => {
                             <>
                                 {filteredProducts.length > 0 ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                                        {filteredProducts.map((product) => (
-                                            <ProductCard key={product.id} product={product} />
+                                        {filteredProducts.map((product, index) => (
+                                            <ProductCard
+                                                key={`${product._id || product.id}-${index}`}
+                                                product={product}
+                                            />
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="text-center py-20">
-                                        <div className="text-gray-400 text-6xl mb-6">📦</div>
                                         <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                                             No Products Available
                                         </h3>
-                                        <p className="text-gray-600 mb-6 text-lg">
+                                        <p className="text-gray-400 mb-6 text-lg">
                                             {products.length === 0
                                                 ? "We're currently setting up our product catalog. Check back soon!"
                                                 : `No products found in the ${selectedCategory} category.`}

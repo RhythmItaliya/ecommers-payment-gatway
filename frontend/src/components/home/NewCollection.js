@@ -35,7 +35,7 @@ const NewCollection = () => {
     const { products, loading, error } = useContext(ProductContext);
 
     const getNewProducts = () => {
-        return products.slice(0, 12);
+        return products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 12);
     };
 
     const newProducts = getNewProducts();
@@ -117,7 +117,6 @@ const NewCollection = () => {
 
                 {!loading && !error && newProducts.length === 0 && (
                     <div className="text-center py-12">
-                        <div className="text-neutral text-6xl mb-4">🆕</div>
                         <h3 className="text-xl font-semibold text-primary mb-2">No New Products Available</h3>
                         <p className="text-neutral mb-4">
                             {products.length === 0

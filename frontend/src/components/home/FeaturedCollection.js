@@ -27,7 +27,7 @@ const FeaturedCollection = () => {
             });
         }
 
-        const newProducts = products.filter((p) => p.id <= 10).slice(0, 4);
+        const newProducts = products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
         if (newProducts.length > 0) {
             collections.push({
                 id: 'new',
@@ -43,7 +43,7 @@ const FeaturedCollection = () => {
             });
         }
 
-        const latestProducts = products.filter((p) => p.id <= 20).slice(0, 4);
+        const latestProducts = products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 6);
         if (latestProducts.length > 0) {
             collections.push({
                 id: 'latest',
