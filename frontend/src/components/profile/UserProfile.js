@@ -12,13 +12,13 @@ import {
     FaBuilding,
     FaHome,
     FaShoppingBag,
+    FaLock,
 } from 'react-icons/fa';
-import { logoutUser } from '../../redux/authAction';
-import { updateUserProfile } from '../../redux/authAction';
+import { logoutUser, updateUserProfile, updatePassword } from '../../redux/authAction';
 import { showSuccessToast, showErrorToast } from '../../redux/toastAction';
 import OrderHistory from './OrderHistory';
 import { clearAllData } from '../../utils/storeUtils';
-import { Input, Button } from '../ui';
+import { Input, Button, LoadingSpinner } from '../ui';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
@@ -27,6 +27,7 @@ const UserProfile = () => {
 
     const [activeTab, setActiveTab] = useState('profile');
     const [isEditing, setIsEditing] = useState(false);
+
     const [formData, setFormData] = useState({
         username: '',
         firstName: '',
@@ -42,6 +43,11 @@ const UserProfile = () => {
             zipCode: '',
         },
         avatar: '',
+    });
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
     });
 
     useEffect(() => {
@@ -158,7 +164,6 @@ const UserProfile = () => {
             navigate('/');
         } catch (error) {
             clearAllData(dispatch);
-            dispatch(showErrorToast('An error occurred during logout'));
         }
     };
 
@@ -181,6 +186,76 @@ const UserProfile = () => {
             });
         }
         setIsEditing(false);
+    };
+
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+
+        // Password validation
+        if (!passwordData.currentPassword.trim()) {
+            dispatch(showErrorToast('Current password is required'));
+            return;
+        }
+
+        if (!passwordData.newPassword.trim()) {
+            dispatch(showErrorToast('New password is required'));
+            return;
+        }
+
+        if (passwordData.newPassword.length < 6) {
+            dispatch(showErrorToast('New password must be at least 6 characters long'));
+            return;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            dispatch(showErrorToast('New passwords do not match'));
+            return;
+        }
+
+        if (passwordData.currentPassword === passwordData.newPassword) {
+            dispatch(showErrorToast('New password must be different from current password'));
+            return;
+        }
+
+        try {
+            const result = await dispatch(
+                updatePassword({
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword,
+                })
+            );
+
+            if (updatePassword.fulfilled.match(result)) {
+                dispatch(showSuccessToast('Password updated successfully!'));
+                setPasswordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: '',
+                });
+            } else if (updatePassword.rejected.match(result)) {
+                let errorMessage = 'Failed to update password. Please try again.';
+
+                if (result.payload) {
+                    if (result.payload.errors && Array.isArray(result.payload.errors)) {
+                        errorMessage = result.payload.errors.join(', ');
+                    } else if (result.payload.message) {
+                        errorMessage = result.payload.message;
+                    }
+                }
+
+                dispatch(showErrorToast(errorMessage));
+            }
+        } catch (error) {
+            dispatch(showErrorToast('An error occurred while updating password'));
+        }
     };
 
     if (!isLoggedIn) {
@@ -230,6 +305,15 @@ const UserProfile = () => {
                             >
                                 <FaShoppingBag className="h-4 w-4" />
                                 <span>My Orders</span>
+                            </Button>
+                            <Button
+                                variant={activeTab === 'password' ? 'primary' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveTab('password')}
+                                className="flex items-center space-x-2"
+                            >
+                                <FaLock className="h-4 w-4" />
+                                <span>Change Password</span>
                             </Button>
                         </div>
                     </div>
@@ -480,6 +564,63 @@ const UserProfile = () => {
                                     </form>
                                 </div>
                             </div>
+                        </div>
+                    ) : activeTab === 'password' ? (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-primary">Change Password</h3>
+                            </div>
+
+                            <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-md">
+                                <div>
+                                    <Input
+                                        label="Current Password"
+                                        type="password"
+                                        name="currentPassword"
+                                        value={passwordData.currentPassword}
+                                        onChange={handlePasswordChange}
+                                        required
+                                        placeholder="Enter your current password"
+                                    />
+                                </div>
+
+                                <div>
+                                    <Input
+                                        label="New Password"
+                                        type="password"
+                                        name="newPassword"
+                                        value={passwordData.newPassword}
+                                        onChange={handlePasswordChange}
+                                        required
+                                        placeholder="Enter your new password"
+                                    />
+                                </div>
+
+                                <div>
+                                    <Input
+                                        label="Confirm New Password"
+                                        type="password"
+                                        name="confirmPassword"
+                                        value={passwordData.confirmPassword}
+                                        onChange={handlePasswordChange}
+                                        required
+                                        placeholder="Confirm your new password"
+                                    />
+                                </div>
+
+                                <div className="flex space-x-3 pt-4">
+                                    <Button
+                                        type="submit"
+                                        variant="secondary"
+                                        size="lg"
+                                        disabled={loading}
+                                        loading={loading}
+                                        className="flex-1"
+                                    >
+                                        {loading ? 'Updating Password...' : 'Update Password'}
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
                     ) : (
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

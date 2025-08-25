@@ -1,5 +1,4 @@
 import React from 'react';
-import { BsArrowRight } from 'react-icons/bs';
 
 const Button = ({
     children,
@@ -48,8 +47,6 @@ const Button = ({
             {children}
 
             {iconRight && !loading && <span className="ml-2">{iconRight}</span>}
-
-            {variant === 'primary' && !iconRight && !loading && <BsArrowRight className="ml-2 w-4 h-4" />}
         </button>
     );
 };

@@ -80,6 +80,29 @@ export const updateUserProfile = createAsyncThunk(
     }
 );
 
+export const updatePassword = createAsyncThunk('auth/updatePassword', async (passwordData, { rejectWithValue }) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found');
+        }
+
+        const response = await axios.put(`${API_URL}/user/password`, passwordData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error.response?.data) {
+            return rejectWithValue(error.response.data);
+        }
+        return rejectWithValue('Password update failed');
+    }
+});
+
 export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, { rejectWithValue }) => {
     try {
         localStorage.removeItem('token');
