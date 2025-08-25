@@ -1,9 +1,8 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { BsHeart, BsBag } from 'react-icons/bs';
+import { BsBag } from 'react-icons/bs';
 import { addToCart } from '../../redux/cartAction';
-import { addToWishlist, removeFromWishlist } from '../../redux/wishlistAction';
 import { showWarningToast, showSuccessToast } from '../../redux/toastAction';
 import { formatINRPrice } from '../../utils/currency';
 
@@ -11,13 +10,7 @@ const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { items: wishlistItems } = useSelector((state) => state.wishlist);
     const { isLoggedIn } = useSelector((state) => state.auth);
-
-    const isInWishlist = wishlistItems.some((item) => {
-        const itemProductId = item.productId?.id || item.productId;
-        return itemProductId === product.id || itemProductId === product._id;
-    });
 
     const handleAddToCart = () => {
         if (!isLoggedIn) {
@@ -29,30 +22,6 @@ const ProductCard = ({ product }) => {
         if (productId) {
             dispatch(addToCart({ productId, quantity: 1 }));
             dispatch(showSuccessToast('Product added to cart successfully!'));
-        }
-    };
-
-    const handleWishlistToggle = () => {
-        if (!isLoggedIn) {
-            dispatch(showWarningToast('Please login to manage wishlist'));
-            return;
-        }
-
-        if (isInWishlist) {
-            const wishlistItem = wishlistItems.find((item) => {
-                const itemProductId = item.productId?.id || item.productId;
-                return itemProductId === product.id || product._id;
-            });
-
-            if (wishlistItem) {
-                const removeId = wishlistItem.productId?.id || wishlistItem.productId;
-                dispatch(removeFromWishlist(removeId));
-                dispatch(showSuccessToast('Product removed from wishlist'));
-            }
-        } else {
-            const productId = product.id || product._id;
-            dispatch(addToWishlist(productId));
-            dispatch(showSuccessToast('Product added to wishlist successfully!'));
         }
     };
 

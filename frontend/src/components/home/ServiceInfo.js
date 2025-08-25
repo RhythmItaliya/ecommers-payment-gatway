@@ -43,7 +43,7 @@ const ServiceInfo = () => {
     return (
         <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-8">
+                <div className="text-center mb-8" data-aos="fade-up">
                     <h3 className="text-xl font-medium text-primary">What Makes Us Special</h3>
                 </div>
 
@@ -52,6 +52,8 @@ const ServiceInfo = () => {
                         <div
                             key={index}
                             className="group p-6 rounded-xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                            data-aos="fade-up"
+                            data-aos-delay={index * 100}
                         >
                             <div
                                 className={`inline-flex p-3 rounded-full ${service.bgColor} mb-4 group-hover:scale-110 transition-transform duration-300`}

@@ -18,7 +18,7 @@ import { logoutUser, updateUserProfile, updatePassword } from '../../redux/authA
 import { showSuccessToast, showErrorToast } from '../../redux/toastAction';
 import OrderHistory from './OrderHistory';
 import { clearAllData } from '../../utils/storeUtils';
-import { Input, Button, LoadingSpinner } from '../ui';
+import { Input, Button } from '../ui';
 
 const UserProfile = () => {
     const dispatch = useDispatch();

@@ -69,8 +69,6 @@ const SuccessPage = () => {
         );
     }
 
-    const redirectUrl = paymentStatus?.next_action?.redirect_to_url?.url || 'N/A';
-
     return (
         <div className="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
             <div className="flex flex-col lg:flex-row w-full max-w-6xl bg-white p-8 border border-gray-200 rounded-lg shadow-md">

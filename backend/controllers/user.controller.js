@@ -171,32 +171,13 @@ const updateUserProfile = async (req, res) => {
             if (address.zipCode !== undefined) updateData['address.zipCode'] = address.zipCode;
         }
 
-        // Use $set operator for proper MongoDB updates with nested fields
-        const updateQuery = {};
-        Object.keys(updateData).forEach(key => {
-            if (key.includes('.')) {
-                // Handle nested fields like 'address.streetAddress'
-                const [parent, child] = key.split('.');
-                if (!updateQuery[parent]) {
-                    updateQuery[parent] = {};
-                }
-                updateQuery[parent][child] = updateData[key];
-            } else {
-                // Handle top-level fields
-                if (!updateQuery.$set) {
-                    updateQuery.$set = {};
-                }
-                updateQuery.$set[key] = updateData[key];
-            }
-        });
-
         console.log('Update data prepared:', updateData);
         console.log('Request body received:', req.body);
 
-        // Find user and update
+        // Find user and update - use $set for proper MongoDB updates
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            updateQuery,
+            { $set: updateData },
             { new: true, runValidators: true }
         ).select('-password');
 
@@ -242,6 +223,82 @@ const updateUserProfile = async (req, res) => {
         return res.status(500).json({
             status: 500,
             message: "Error updating profile",
+            error: error.message
+        });
+    }
+};
+
+const updatePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        // Validate input
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                status: 400,
+                message: "Current password and new password are required"
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                status: 400,
+                message: "New password must be at least 6 characters long"
+            });
+        }
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: 404,
+                message: "User not found"
+            });
+        }
+
+        // Verify current password
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+            return res.status(401).json({
+                status: 401,
+                message: "Current password is incorrect"
+            });
+        }
+
+        // Check if new password is different from current
+        const isNewPasswordSame = await bcrypt.compare(newPassword, user.password);
+        if (isNewPasswordSame) {
+            return res.status(400).json({
+                status: 400,
+                message: "New password must be different from current password"
+            });
+        }
+
+        // Hash new password
+        const saltRounds = 10;
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Update password
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { password: hashedNewPassword },
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        console.log('Password updated successfully for user:', updatedUser.username);
+
+        return res.status(200).json({
+            status: 200,
+            message: "Password updated successfully",
+            data: updatedUser
+        });
+    } catch (error) {
+        console.error('Error updating password:', error);
+        
+        return res.status(500).json({
+            status: 500,
+            message: "Error updating password",
             error: error.message
         });
     }
@@ -295,4 +352,4 @@ const testUserProfile = async (req, res) => {
     }
 }
 
-module.exports = { registerUser, loginUser, getUserProfile, logoutUser, updateUserProfile, testUser, testUserProfile }
+module.exports = { registerUser, loginUser, getUserProfile, logoutUser, updateUserProfile, updatePassword, testUser, testUserProfile }

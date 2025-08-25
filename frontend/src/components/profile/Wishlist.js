@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchWishlist, clearWishlist } from '../../redux/wishlistAction';
 import ProductCard from '../product/ProductCard';
 import { Button, ErrorState, LoadingSpinner } from '../ui';
-import { showSuccessToast, showErrorToast, showWarningToast, showInfoToast } from '../../redux/toastAction';
+import { showWarningToast } from '../../redux/toastAction';
 
 const Wishlist = () => {
     const dispatch = useDispatch();

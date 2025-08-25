@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaClock, FaEye, FaTimes } from 'react-icons/fa';
 import { formatINRPrice } from '../../utils/currency';
@@ -61,11 +61,7 @@ const OrderHistory = () => {
         },
     };
 
-    useEffect(() => {
-        fetchOrders();
-    }, [selectedStatus]);
-
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -86,7 +82,11 @@ const OrderHistory = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [selectedStatus, token, dispatch]);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
 
     const handleCancelOrder = async (orderId) => {
         if (!window.confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {

@@ -25,7 +25,7 @@ const RepasseCollections = () => {
     return (
         <section className="py-16 bg-light">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
+                <div className="text-center mb-12" data-aos="fade-up">
                     <h2 className="text-4xl font-bold text-primary mb-4">Repasse Collections</h2>
                     <p className="text-neutral text-lg max-w-2xl mx-auto">
                         Discover our exclusive men's and women's collections
@@ -33,8 +33,8 @@ const RepasseCollections = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-                    {collections.map((collection) => (
-                        <div key={collection.id} className="group">
+                    {collections.map((collection, index) => (
+                        <div key={collection.id} className="group" data-aos="fade-up" data-aos-delay={index * 200}>
                             <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                                 <div className="relative overflow-hidden">
                                     <img

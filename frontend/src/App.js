@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 import { Provider } from 'react-redux';
 import store from './redux/store';
@@ -33,6 +35,29 @@ const ScrollToTop = () => {
 };
 
 const App = () => {
+    useEffect(() => {
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false,
+        });
+
+        const handleRouteChange = () => {
+            AOS.refresh();
+        };
+
+        const timer = setTimeout(() => {
+            AOS.refresh();
+        }, 100);
+
+        window.addEventListener('popstate', handleRouteChange);
+        return () => {
+            window.removeEventListener('popstate', handleRouteChange);
+            clearTimeout(timer);
+        };
+    }, []);
+
     return (
         <Provider store={store}>
             <AuthProvider>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { removeFromCart, updateCartItemQuantity } from '../redux/cartAction';
-import { showSuccessToast, showErrorToast, showInfoToast } from '../redux/toastAction';
+import { showSuccessToast, showErrorToast } from '../redux/toastAction';
 import { FiTrash2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { formatINRPrice } from '../utils/currency';

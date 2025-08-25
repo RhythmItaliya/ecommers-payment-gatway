@@ -16,7 +16,7 @@ const TrendingProducts = () => {
     return (
         <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
+                <div className="text-center mb-12" data-aos="fade-up">
                     <h2 className="text-3xl font-bold text-primary mb-3 hover:text-accent transition-colors duration-300 cursor-default">
                         Trending Products
                     </h2>
@@ -35,10 +35,12 @@ const TrendingProducts = () => {
 
                 {!loading && !error && trendingProducts.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-                        {trendingProducts.map((product) => (
+                        {trendingProducts.map((product, index) => (
                             <div
                                 key={product.id}
                                 className="group transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 ease-in-out"
+                                data-aos="fade-up"
+                                data-aos-delay={index * 100}
                             >
                                 <ProductCard product={product} />
                             </div>
@@ -62,7 +64,7 @@ const TrendingProducts = () => {
                 )}
 
                 {!loading && !error && trendingProducts.length > 0 && (
-                    <div className="text-center">
+                    <div className="text-center" data-aos="fade-up" data-aos-delay="400">
                         <Button variant="primary" size="lg" as={Link} to="/products">
                             View All Products
                         </Button>

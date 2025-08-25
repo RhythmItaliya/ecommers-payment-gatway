@@ -67,7 +67,7 @@ const FeaturedCollection = () => {
     return (
         <section className="py-16 bg-light">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
+                <div className="text-center mb-12" data-aos="fade-up">
                     <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Featured Collections</h2>
                     <p className="text-neutral text-lg max-w-2xl mx-auto">
                         Discover our latest curated collections designed for every style and occasion
@@ -84,10 +84,12 @@ const FeaturedCollection = () => {
 
                 {!loading && !error && collections.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {collections.map((collection) => (
+                        {collections.map((collection, index) => (
                             <div
                                 key={collection.id}
                                 className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+                                data-aos="fade-up"
+                                data-aos-delay={index * 200}
                             >
                                 <div
                                     className="relative h-80 bg-cover bg-center bg-no-repeat"

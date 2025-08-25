@@ -48,7 +48,7 @@ const Checkout = () => {
                 country: user.address?.country || '',
             });
         }
-    }, [isLoggedIn, cart?.length, navigate, user, dispatch]);
+    }, [isLoggedIn, cart, navigate, user, dispatch]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

@@ -86,7 +86,7 @@ const NewCollection = () => {
     return (
         <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
+                <div className="text-center mb-12" data-aos="fade-up">
                     <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">New Collection</h2>
                     <p className="text-neutral text-lg max-w-2xl mx-auto">
                         Discover our latest arrivals and newest additions to our collection
@@ -102,7 +102,7 @@ const NewCollection = () => {
                 {error && <ErrorState error={error} onRetry={() => window.location.reload()} />}
 
                 {!loading && !error && newProducts.length > 0 && (
-                    <div className="relative mb-8">
+                    <div className="relative mb-8" data-aos="fade-up" data-aos-delay="200">
                         <Slider {...sliderSettings}>
                             {newProducts.map((product) => (
                                 <div key={product.id} className="px-3">
@@ -133,7 +133,7 @@ const NewCollection = () => {
                 )}
 
                 {!loading && !error && newProducts.length > 0 && (
-                    <div className="text-center">
+                    <div className="text-center" data-aos="fade-up" data-aos-delay="400">
                         <Button variant="primary" size="xl" as={Link} to="/products?category=new">
                             View All New Products
                         </Button>

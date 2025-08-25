@@ -56,11 +56,11 @@ const Hero = () => {
 
             <div className="relative z-10 container mx-auto px-4 flex items-center justify-center h-full">
                 <div className="text-center text-white max-w-2xl mx-auto">
-                    <div className="flex items-center justify-center mb-4">
+                    <div className="flex items-center justify-center mb-4" data-aos="fade-down" data-aos-delay="200">
                         <div className="w-8 h-1 bg-secondary mr-3"></div>
                         <span className="text-sm uppercase tracking-wide">{slides[currentSlide].tag}</span>
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-bold mb-4">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4" data-aos="fade-up" data-aos-delay="400">
                         {slides[currentSlide].title}
                         <br />
                         <span className="font-light">{slides[currentSlide].subtitle}</span>
@@ -71,6 +71,8 @@ const Hero = () => {
                         as={Link}
                         to={slides[currentSlide].link}
                         className="!bg-white !text-primary hover:!bg-gray-100"
+                        data-aos="fade-up"
+                        data-aos-delay="600"
                     >
                         Shop Now
                     </Button>
