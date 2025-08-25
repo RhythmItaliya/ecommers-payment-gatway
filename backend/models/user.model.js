@@ -11,12 +11,14 @@ const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         default: '',
-        maxlength: [50, 'First name cannot exceed 50 characters']
+        maxlength: [50, 'First name cannot exceed 50 characters'],
+        trim: true
     },
     lastName: {
         type: String,
         default: '',
-        maxlength: [50, 'Last name cannot exceed 50 characters']
+        maxlength: [50, 'Last name cannot exceed 50 characters'],
+        trim: true
     },
     password: {
         type: String,
@@ -38,7 +40,6 @@ const userSchema = new mongoose.Schema({
         default: '',
         validate: {
             validator: function(v) {
-                // Allow empty string or valid phone format
                 return v === '' || /^[\+]?[1-9][\d]{0,15}$/.test(v);
             },
             message: 'Please enter a valid phone number'

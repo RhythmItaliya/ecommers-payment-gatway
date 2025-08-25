@@ -4,6 +4,7 @@ import { IoMdArrowForward } from 'react-icons/io';
 import { FiTrash2 } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearCart, fetchCart } from '../redux/cartAction';
+import { showSuccessToast, showErrorToast, showWarningToast } from '../redux/toastAction';
 import CartItem from './CartItem';
 import { SidebarContext } from '../contexts/SidebarContext';
 import { formatINRPrice, roundAmount } from '../utils/currency';
@@ -30,6 +31,25 @@ const Sidebar = () => {
         } else {
             handleClose();
             navigate('/profile');
+        }
+    };
+
+    const handleClearCart = async () => {
+        if (!window.confirm('Are you sure you want to clear your entire cart? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            dispatch(showWarningToast('Clearing your cart...'));
+            const result = await dispatch(clearCart());
+
+            if (clearCart.fulfilled.match(result)) {
+                dispatch(showSuccessToast('Cart cleared successfully!'));
+            } else if (clearCart.rejected.match(result)) {
+                dispatch(showErrorToast('Failed to clear cart. Please try again.'));
+            }
+        } catch (error) {
+            dispatch(showErrorToast('An error occurred while clearing cart'));
         }
     };
 
@@ -63,16 +83,18 @@ const Sidebar = () => {
             <div className="py-4 space-y-3">
                 <div className="flex items-center justify-between">
                     <span className="font-semibold">Subtotal: {formatINRPrice(roundedTotalAmount)}</span>
-                    {items.length > 0 && (
-                        <button
-                            onClick={() => dispatch(clearCart())}
-                            className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                            title="Clear cart"
-                        >
-                            <FiTrash2 />
-                        </button>
-                    )}
                 </div>
+
+                {items.length > 0 && (
+                    <button
+                        onClick={handleClearCart}
+                        className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                        title="Clear all items from cart"
+                    >
+                        <FiTrash2 size={16} />
+                        Clear All Cart
+                    </button>
+                )}
 
                 <button
                     onClick={handleCheckout}

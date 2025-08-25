@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import ToastContainer from './components/ui/Toast';
 
 import Home from './pages/Home';
 import ProductDetails from './components/product/ProductDetails';
@@ -55,6 +56,7 @@ const App = () => {
                                 </Routes>
                                 <Sidebar />
                                 <Footer />
+                                <ToastContainer />
                             </div>
                         </Router>
                     </ProductProvider>

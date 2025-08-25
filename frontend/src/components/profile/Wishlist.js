@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchWishlist, clearWishlist } from '../../redux/wishlistAction';
 import ProductCard from '../product/ProductCard';
 import { Button, ErrorState, LoadingSpinner } from '../ui';
+import { showSuccessToast, showErrorToast, showWarningToast, showInfoToast } from '../../redux/toastAction';
 
 const Wishlist = () => {
     const dispatch = useDispatch();
@@ -13,7 +14,8 @@ const Wishlist = () => {
     }, [dispatch]);
 
     const handleClearWishlist = () => {
-        if (window.confirm('Are you sure you want to clear your wishlist?')) {
+        if (window.confirm('Are you sure you want to clear your wishlist? This action cannot be undone.')) {
+            dispatch(showWarningToast('Clearing wishlist...'));
             dispatch(clearWishlist());
         }
     };

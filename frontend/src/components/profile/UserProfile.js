@@ -18,7 +18,7 @@ import { updateUserProfile } from '../../redux/authAction';
 import { showSuccessToast, showErrorToast } from '../../redux/toastAction';
 import OrderHistory from './OrderHistory';
 import { clearAllData } from '../../utils/storeUtils';
-import { Input, Button, LoadingSpinner } from '../ui';
+import { Input, Button } from '../ui';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
@@ -118,6 +118,7 @@ const UserProfile = () => {
                 address: formData.address,
             };
 
+            console.log('Sending update data:', updateData);
             const result = await dispatch(updateUserProfile(updateData));
 
             if (updateUserProfile.fulfilled.match(result)) {
@@ -142,6 +143,10 @@ const UserProfile = () => {
     };
 
     const handleLogout = async () => {
+        if (!window.confirm('Are you sure you want to logout?')) {
+            return;
+        }
+
         try {
             const result = await dispatch(logoutUser());
 
@@ -153,6 +158,7 @@ const UserProfile = () => {
             navigate('/');
         } catch (error) {
             clearAllData(dispatch);
+            dispatch(showErrorToast('An error occurred during logout'));
         }
     };
 
@@ -168,7 +174,6 @@ const UserProfile = () => {
                     streetAddress: user.address?.streetAddress || '',
                     apartment: user.address?.apartment || '',
                     city: user.address?.city || '',
-                    state: user.address?.state || '',
                     country: user.address?.country || '',
                     zipCode: user.address?.zipCode || '',
                 },

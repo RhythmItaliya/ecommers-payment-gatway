@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { removeFromCart, updateCartItemQuantity } from '../redux/cartAction';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../redux/toastAction';
 import { FiTrash2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { formatINRPrice } from '../utils/currency';
@@ -19,14 +20,36 @@ const CartItem = ({ item }) => {
 
     const productId = id || _id;
 
-    const updateQuantity = (newQty) => {
+    const updateQuantity = async (newQty) => {
         if (newQty > 0) {
-            dispatch(updateCartItemQuantity({ productId, quantity: newQty }));
+            try {
+                const result = await dispatch(updateCartItemQuantity({ productId, quantity: newQty }));
+                if (updateCartItemQuantity.fulfilled.match(result)) {
+                    dispatch(showSuccessToast(`Quantity updated to ${newQty}`));
+                } else if (updateCartItemQuantity.rejected.match(result)) {
+                    dispatch(showErrorToast('Failed to update quantity'));
+                }
+            } catch (error) {
+                dispatch(showErrorToast('An error occurred while updating quantity'));
+            }
         }
     };
 
-    const handleRemove = () => {
-        dispatch(removeFromCart(productId));
+    const handleRemove = async () => {
+        if (!window.confirm('Are you sure you want to remove this item from cart?')) {
+            return;
+        }
+
+        try {
+            const result = await dispatch(removeFromCart(productId));
+            if (removeFromCart.fulfilled.match(result)) {
+                dispatch(showSuccessToast('Item removed from cart'));
+            } else if (removeFromCart.rejected.match(result)) {
+                dispatch(showErrorToast('Failed to remove item from cart'));
+            }
+        } catch (error) {
+            dispatch(showErrorToast('An error occurred while removing item'));
+        }
     };
 
     return (

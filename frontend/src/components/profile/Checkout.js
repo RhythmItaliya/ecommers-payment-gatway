@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { clearCart, fetchCart } from '../../redux/cartAction';
+import { fetchCart } from '../../redux/cartAction';
 import CheckOutItem from './CheckOutItem';
 import { Button, Input, LoadingSpinner } from '../ui';
 
@@ -103,7 +103,7 @@ const Checkout = () => {
     if (!isLoggedIn) {
         return (
             <div className="container mx-auto px-4 py-16">
-                <div className="text-center">
+                <div className="text-center mt-40">
                     <h3 className="text-xl font-semibold text-primary mb-2">Please Login</h3>
                     <p className="text-neutral mb-4">You need to be logged in to checkout.</p>
                     <Button variant="primary" onClick={() => navigate('/')}>
@@ -117,8 +117,7 @@ const Checkout = () => {
     if (!cart || cart.length === 0) {
         return (
             <div className="container mx-auto px-4 py-16">
-                <div className="text-center">
-                    <div className="text-neutral text-6xl mb-4">🛒</div>
+                <div className="text-center mt-40">
                     <h3 className="text-xl font-semibold text-primary mb-2">Your Cart is Empty</h3>
                     <p className="text-neutral mb-4">Add some products to your cart before checkout.</p>
                     <Button variant="primary" onClick={() => navigate('/products')}>

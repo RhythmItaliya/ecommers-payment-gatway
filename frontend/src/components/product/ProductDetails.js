@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { addToCart } from '../../redux/cartAction';
 import { addToWishlist, removeFromWishlist } from '../../redux/wishlistAction';
+import { showWarningToast, showSuccessToast } from '../../redux/toastAction';
 import { formatINRPrice } from '../../utils/currency';
 import { BsBag, BsHeart } from 'react-icons/bs';
 import LoadingSpinner from '../ui/LoadingSpinner';
@@ -17,6 +18,7 @@ const ProductDetails = () => {
     const { id } = useParams();
 
     const { items: wishlistItems } = useSelector((state) => state.wishlist);
+    const { isLoggedIn } = useSelector((state) => state.auth);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -81,13 +83,24 @@ const ProductDetails = () => {
     });
 
     const handleAddToCart = () => {
+        if (!isLoggedIn) {
+            dispatch(showWarningToast('Please login to add items to cart'));
+            return;
+        }
+
         const productId = product.id || product._id;
         if (productId) {
             dispatch(addToCart({ productId, quantity: 1 }));
+            dispatch(showSuccessToast('Product added to cart successfully!'));
         }
     };
 
     const handleWishlistToggle = () => {
+        if (!isLoggedIn) {
+            dispatch(showWarningToast('Please login to manage wishlist'));
+            return;
+        }
+
         if (isInWishlist) {
             const wishlistItem = wishlistItems.find((item) => {
                 const itemProductId = item.productId?.id || item.productId;
@@ -97,10 +110,12 @@ const ProductDetails = () => {
             if (wishlistItem) {
                 const removeId = wishlistItem.productId?.id || wishlistItem.productId;
                 dispatch(removeFromWishlist(removeId));
+                dispatch(showSuccessToast('Product removed from wishlist'));
             }
         } else {
             const productId = product.id || product._id;
             dispatch(addToWishlist(productId));
+            dispatch(showSuccessToast('Product added to wishlist successfully!'));
         }
     };
 

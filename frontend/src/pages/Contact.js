@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { BsEnvelope, BsPerson, BsChatText } from 'react-icons/bs';
+import { BsEnvelope, BsPerson } from 'react-icons/bs';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../redux/toastAction';
 
 const Contact = () => {
+    const dispatch = useDispatch();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -23,7 +26,25 @@ const Contact = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Form validation
+        if (!formData.name.trim()) {
+            dispatch(showErrorToast('Name is required'));
+            return;
+        }
+
+        if (!formData.email.trim()) {
+            dispatch(showErrorToast('Email is required'));
+            return;
+        }
+
+        if (!formData.message.trim()) {
+            dispatch(showErrorToast('Message is required'));
+            return;
+        }
+
         setLoading(true);
+        dispatch(showInfoToast('Sending your message...'));
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/contact/submit`, formData, {
@@ -33,13 +54,17 @@ const Contact = () => {
             });
 
             if (response.data.success) {
+                dispatch(showSuccessToast(response.data.message || 'Message sent successfully!'));
                 setSuccess(true);
                 setFormData({ name: '', email: '', message: '' });
             } else {
-                throw new Error('Failed to send message');
+                throw new Error(response.data.message || 'Failed to send message');
             }
         } catch (error) {
             console.error('Error sending message:', error);
+            const errorMessage =
+                error.response?.data?.message || error.message || 'Failed to send message. Please try again.';
+            dispatch(showErrorToast(errorMessage));
         } finally {
             setLoading(false);
         }
@@ -54,7 +79,14 @@ const Contact = () => {
                     </div>
                     <h2 className="text-xl font-semibold text-neutral mb-2">Message Sent!</h2>
                     <p className="text-gray-600 mb-4">Thank you for contacting us.</p>
-                    <Button onClick={() => setSuccess(false)} variant="primary" size="sm">
+                    <Button
+                        onClick={() => {
+                            setSuccess(false);
+                            dispatch(showSuccessToast('Ready to send another message!'));
+                        }}
+                        variant="primary"
+                        size="sm"
+                    >
                         Send Another
                     </Button>
                 </div>

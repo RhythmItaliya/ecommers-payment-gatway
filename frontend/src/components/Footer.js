@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BsFacebook, BsTwitter, BsInstagram, BsLinkedin, BsEnvelope, BsTelephone, BsGeoAlt } from 'react-icons/bs';
-import Button from './ui/Button';
 
 const Footer = () => {
     const quickLinks = ['Home', 'Men', 'Women', 'New', 'Sale'];
@@ -32,20 +31,6 @@ const Footer = () => {
                                 Discover exceptional style and quality clothing for men and women. Elevate your wardrobe
                                 with our curated collections.
                             </p>
-
-                            <div className="space-y-3">
-                                <h4 className="font-semibold text-white">Stay Updated</h4>
-                                <div className="flex space-x-2">
-                                    <input
-                                        type="email"
-                                        placeholder="Enter your email"
-                                        className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
-                                    />
-                                    <Button variant="secondary" size="sm">
-                                        Subscribe
-                                    </Button>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="space-y-6">

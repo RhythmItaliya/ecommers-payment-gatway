@@ -146,20 +146,22 @@ const logoutUser = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
     try {
-        const { username, email, phone, address, avatar } = req.body;
+        const { username, firstName, lastName, email, phone, address, avatar } = req.body;
         const userId = req.user.id;
 
-        console.log('Update profile request:', { userId, username, email, phone, address, avatar });
+        console.log('Update profile request:', { userId, username, firstName, lastName, email, phone, address, avatar });
 
         // Prepare update object
         const updateData = {};
         
         if (username !== undefined) updateData.username = username;
+        if (firstName !== undefined) updateData.firstName = firstName;
+        if (lastName !== undefined) updateData.lastName = lastName;
         if (email !== undefined) updateData.email = email;
         if (phone !== undefined) updateData.phone = phone;
         if (avatar !== undefined) updateData.avatar = avatar;
         
-        // Handle nested address object
+        // Handle nested address object - use $set for nested updates
         if (address && typeof address === 'object') {
             if (address.streetAddress !== undefined) updateData['address.streetAddress'] = address.streetAddress;
             if (address.apartment !== undefined) updateData['address.apartment'] = address.apartment;
@@ -169,12 +171,32 @@ const updateUserProfile = async (req, res) => {
             if (address.zipCode !== undefined) updateData['address.zipCode'] = address.zipCode;
         }
 
+        // Use $set operator for proper MongoDB updates with nested fields
+        const updateQuery = {};
+        Object.keys(updateData).forEach(key => {
+            if (key.includes('.')) {
+                // Handle nested fields like 'address.streetAddress'
+                const [parent, child] = key.split('.');
+                if (!updateQuery[parent]) {
+                    updateQuery[parent] = {};
+                }
+                updateQuery[parent][child] = updateData[key];
+            } else {
+                // Handle top-level fields
+                if (!updateQuery.$set) {
+                    updateQuery.$set = {};
+                }
+                updateQuery.$set[key] = updateData[key];
+            }
+        });
+
         console.log('Update data prepared:', updateData);
+        console.log('Request body received:', req.body);
 
         // Find user and update
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            updateData,
+            updateQuery,
             { new: true, runValidators: true }
         ).select('-password');
 

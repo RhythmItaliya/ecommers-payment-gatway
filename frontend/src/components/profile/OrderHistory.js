@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaClock, FaEye, FaTimes } from 'react-icons/fa';
 import { formatINRPrice } from '../../utils/currency';
 import axios from 'axios';
 import { Button, LoadingSpinner, ErrorState } from '../ui';
+import { showSuccessToast, showErrorToast } from '../../redux/toastAction';
 
 const OrderHistory = () => {
+    const dispatch = useDispatch();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -78,14 +80,16 @@ const OrderHistory = () => {
                 setOrders(response.data.orders);
             }
         } catch (error) {
-            setError('Failed to load orders. Please try again.');
+            const errorMessage = 'Failed to load orders. Please try again.';
+            setError(errorMessage);
+            dispatch(showErrorToast(errorMessage));
         } finally {
             setLoading(false);
         }
     };
 
     const handleCancelOrder = async (orderId) => {
-        if (!window.confirm('Are you sure you want to cancel this order?')) {
+        if (!window.confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
             return;
         }
 
@@ -99,10 +103,12 @@ const OrderHistory = () => {
             );
 
             if (response.data.success) {
+                dispatch(showSuccessToast('Order cancelled successfully!'));
                 fetchOrders();
             }
         } catch (error) {
-            // Handle error silently
+            const errorMessage = error.response?.data?.message || 'Failed to cancel order. Please try again.';
+            dispatch(showErrorToast(errorMessage));
         }
     };
 
@@ -197,19 +203,6 @@ const OrderHistory = () => {
                                             >
                                                 {statusConfig.label}
                                             </span>
-
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedOrder(order);
-                                                    setShowOrderDetails(true);
-                                                }}
-                                                className="p-2 text-neutral hover:text-primary"
-                                                title="View Details"
-                                            >
-                                                <FaEye className="h-4 w-4" />
-                                            </Button>
                                         </div>
                                     </div>
                                 </div>
