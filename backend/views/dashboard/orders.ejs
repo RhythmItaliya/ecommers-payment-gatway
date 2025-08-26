@@ -14,54 +14,66 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Details</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products & Items</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment & Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Items</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <% orders.forEach(order => { %>
                             <tr class="hover:bg-gray-50">
-                                <!-- Order Details Column -->
+                                <!-- Order ID Column -->
                                 <td class="px-6 py-4">
-                                    <div class="space-y-2">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            Order #<%= order._id.toString().slice(-8) %>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        #<%= order._id.toString().slice(-8) %>
+                                    </div>
+                                    <% if (order.orderNumber) { %>
+                                        <div class="text-xs text-blue-600 font-mono">
+                                            <%= order.orderNumber %>
                                         </div>
-                                        <div class="text-sm text-gray-900">
-                                            Customer: 
-                                            <%= (order.userId?.firstName || order.userId?.lastName) 
-                                                ? `${order.userId.firstName || ''} ${order.userId.lastName || ''}`.trim()
-                                                : (order.userId?.username || 'N/A') %>
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            Email: <%= order.userId?.email || 'N/A' %>
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            Created: <%= new Date(order.createdAt).toLocaleDateString() %>
-                                        </div>
-                                        <% if (order.orderNumber) { %>
-                                            <div class="text-xs text-blue-600 font-mono">
-                                                <%= order.orderNumber %>
-                                            </div>
-                                        <% } %>
+                                    <% } %>
+                                </td>
+
+                                <!-- Email ID Column -->
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">
+                                        <%= order.userId?.email || 'N/A' %>
                                     </div>
                                 </td>
 
-                                <!-- Products & Items Column -->
+                                <!-- Payment Status Column -->
                                 <td class="px-6 py-4">
-                                    <div class="space-y-2">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            <%= order.items ? order.items.length : 0 %> Items
+                                    <div class="space-y-1">
+                                        <% if (order.paymentId) { %>
+                                            <div class="text-xs text-green-600 font-medium">
+                                                ✓ Paid
+                                            </div>
+                                        <% } else { %>
+                                            <div class="text-xs text-red-600 font-medium">
+                                                ✗ Unpaid
+                                            </div>
+                                        <% } %>
+                                        <div class="text-xs text-gray-500">
+                                            ₹<%= order.totalAmount || 0 %>
                                         </div>
-                                        <div class="text-xs text-gray-600 space-y-1">
+                                        <div class="text-xs text-gray-500">
+                                            <%= order.paymentMethod || 'N/A' %>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Product Items Column -->
+                                <td class="px-6 py-4">
+                                    <div class="space-y-1">
+                                        <div class="text-xs text-gray-600">
                                             <% if (order.items && order.items.length > 0) { %>
                                                 <% order.items.forEach((item, index) => { %>
-                                                    <div class="flex justify-between">
-                                                        <span><%= item.productId?.name || 'Product' %></span>
-                                                        <span class="text-gray-500">x<%= item.quantity %></span>
-                                                        <span class="text-blue-600">₹<%= item.price || 0 %></span>
+                                                    <div class="flex justify-between items-center mb-1">
+                                                        <span class="text-sm"><%= item.productId?.name || 'Product' %></span>
+                                                        <span class="text-xs text-gray-500">x<%= item.quantity %></span>
+                                                        <span class="text-xs text-blue-600">₹<%= item.price || 0 %></span>
                                                     </div>
                                                 <% }); %>
                                             <% } else { %>
@@ -71,38 +83,11 @@
                                     </div>
                                 </td>
                                 
-                                <!-- Payment & Status Column -->
-                                <td class="px-6 py-4">
-                                    <div class="space-y-2">
-                                        <div class="text-lg font-bold text-gray-900">
-                                            ₹<%= order.totalAmount || 0 %>
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            Payment: <%= order.paymentMethod || 'N/A' %>
-                                        </div>
-                                        <% if (order.paymentId) { %>
-                                            <div class="text-xs text-green-600">
-                                                ✓ Paid
-                                            </div>
-                                        <% } %>
-                                        <div class="mt-2">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                                <%= order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' %>
-                                                <%= order.status === 'processing' ? 'bg-blue-100 text-blue-800' : '' %>
-                                                <%= order.status === 'shipped' ? 'bg-purple-100 text-purple-800' : '' %>
-                                                <%= order.status === 'delivered' ? 'bg-green-100 text-green-800' : '' %>
-                                                <%= order.status === 'cancelled' ? 'bg-red-100 text-red-800' : '' %>">
-                                                <%= order.status || 'pending' %>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                
                                 <!-- Actions Column -->
                                 <td class="px-6 py-4">
                                     <div class="space-y-2">
                                         <select 
-                                            class="order-status-select w-50 border border-gray-300 rounded px-2 py-1 text-sm"
+                                            class="order-status-select w-full border border-gray-300 rounded px-2 py-1 text-sm"
                                             data-order-id="<%= order._id %>"
                                             data-current-status="<%= order.status %>">
                                             <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
@@ -111,6 +96,9 @@
                                             <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
                                             <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
                                         </select>
+                                        <div class="text-xs text-gray-500 mt-1 current-status">
+                                            <%= order.status || 'pending' %>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -160,16 +148,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.dataset.currentStatus = newStatus;
                         
                         // Update the status badge
-                        const statusCell = this.closest('tr').querySelector('td:nth-child(3) span');
-                        if (statusCell) {
-                            statusCell.textContent = newStatus;
-                            statusCell.className = `inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                newStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                newStatus === 'processing' ? 'bg-blue-100 text-blue-800' :
-                                newStatus === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                                newStatus === 'delivered' ? 'bg-green-100 text-green-800' :
-                                newStatus === 'cancelled' ? 'bg-red-100 text-red-800' : ''
-                            }`;
+                        const statusTextEl = this.closest('tr').querySelector('.current-status');
+                        if (statusTextEl) {
+                            statusTextEl.textContent = newStatus;
                         }
                         
                         // Show success message

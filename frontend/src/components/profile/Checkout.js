@@ -90,43 +90,27 @@ const Checkout = () => {
         }
     };
 
-    if (loading || !cart) {
+    if (loading || !cart) return <LoadingSpinner size="lg" variant="primary" text="Loading checkout..." />;
+    if (!isLoggedIn)
         return (
-            <div className="container mx-auto px-4 py-16">
-                <div className="text-center">
-                    <LoadingSpinner size="lg" variant="primary" text="Loading checkout..." />
-                </div>
+            <div className="text-center mt-40">
+                <h3 className="text-xl font-semibold text-primary mb-2">Please Login</h3>
+                <p className="text-neutral mb-4">You need to be logged in to checkout.</p>
+                <Button variant="primary" onClick={() => navigate('/')}>
+                    Go to Login
+                </Button>
             </div>
         );
-    }
-
-    if (!isLoggedIn) {
+    if (!cart || cart.length === 0)
         return (
-            <div className="container mx-auto px-4 py-16">
-                <div className="text-center mt-40">
-                    <h3 className="text-xl font-semibold text-primary mb-2">Please Login</h3>
-                    <p className="text-neutral mb-4">You need to be logged in to checkout.</p>
-                    <Button variant="primary" onClick={() => navigate('/')}>
-                        Go to Login
-                    </Button>
-                </div>
+            <div className="text-center mt-40">
+                <h3 className="text-xl font-semibold text-primary mb-2">Your Cart is Empty</h3>
+                <p className="text-neutral mb-4">Add some products to your cart before checkout.</p>
+                <Button variant="primary" onClick={() => navigate('/products')}>
+                    Browse Products
+                </Button>
             </div>
         );
-    }
-
-    if (!cart || cart.length === 0) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <div className="text-center mt-40">
-                    <h3 className="text-xl font-semibold text-primary mb-2">Your Cart is Empty</h3>
-                    <p className="text-neutral mb-4">Add some products to your cart before checkout.</p>
-                    <Button variant="primary" onClick={() => navigate('/products')}>
-                        Browse Products
-                    </Button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="container mx-auto px-4 py-16">
@@ -241,13 +225,12 @@ const Checkout = () => {
                     <h2 className="text-2xl font-bold text-primary mb-6">Order Summary</h2>
 
                     <div className="space-y-4 mb-6">
-                        {cart &&
-                            cart.map((item) => (
-                                <CheckOutItem
-                                    key={item.productId?._id || item.product?._id || item.id || Math.random()}
-                                    item={item}
-                                />
-                            ))}
+                        {cart.map((item) => (
+                            <CheckOutItem
+                                key={item.productId?._id || item.product?._id || item.id || Math.random()}
+                                item={item}
+                            />
+                        ))}
                     </div>
 
                     <div className="border-t border-light pt-4 space-y-3">

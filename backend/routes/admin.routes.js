@@ -4,6 +4,8 @@ const Order = require('../models/order.model');
 const Product = require('../models/product.model');
 const User = require('../models/user.model');
 const Contact = require('../models/contact.model');
+const { uploadSingle, handleUploadError } = require('../middlewares/upload');
+const { uploadImage } = require('../services/cloudinary.service');
 
 // ===== AUTH ROUTES =====
 
@@ -116,6 +118,30 @@ router.get('/dashboard/orders', async (req, res) => {
             title: 'Manage Orders',
             currentPage: 'orders',
             orders: [],
+            layout: 'dashboard/layout'
+        });
+    }
+});
+
+// ===== CONTACT US PAGE =====
+
+// Contact Us page
+router.get('/dashboard/contacts', async (req, res) => {
+    try {
+        const contacts = await Contact.find().sort({ createdAt: -1 });
+        
+        res.render('dashboard/contacts', { 
+            title: 'Contact Us',
+            currentPage: 'contacts',
+            contacts: contacts || [],
+            layout: 'dashboard/layout'
+        });
+    } catch (error) {
+        console.error('Error fetching contacts:', error);
+        res.render('dashboard/contacts', { 
+            title: 'Contact Us',
+            currentPage: 'contacts',
+            contacts: [],
             layout: 'dashboard/layout'
         });
     }
@@ -298,20 +324,104 @@ router.get('/api/users', async (req, res) => {
 // ===== PRODUCTS API =====
 
 // Create new product
-router.post('/api/products', async (req, res) => {
+router.post('/api/products', uploadSingle, handleUploadError, async (req, res) => {
     try {
+        // Debug: Log what we received
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
+        
+        // Validate required fields
+        const { name, description, category, price, highPrice, stock, sizes, colors, gender, discount } = req.body;
+        
+        if (!name || !description || !category || !gender) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: name, description, category, and gender are required'
+            });
+        }
+        
+        // Check if image file was uploaded
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product image is required'
+            });
+        }
+
+        // Parse and validate numeric fields
+        const parsedPrice = parseFloat(price);
+        const parsedHighPrice = parseFloat(highPrice);
+        const parsedStock = parseInt(stock);
+        const parsedDiscount = parseFloat(discount);
+
+        if (isNaN(parsedPrice) || parsedPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid price value'
+            });
+        }
+
+        if (isNaN(parsedHighPrice) || parsedHighPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid high price value'
+            });
+        }
+
+        if (isNaN(parsedStock) || parsedStock < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid stock value'
+            });
+        }
+
+        if (isNaN(parsedDiscount) || parsedDiscount < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid discount value'
+            });
+        }
+
+        // Upload image to Cloudinary
+        let imageUrl = '';
+        if (req.file) {
+            try {
+                // Convert buffer to base64 for Cloudinary
+                const base64Image = req.file.buffer.toString('base64');
+                const dataURI = `data:${req.file.mimetype};base64,${base64Image}`;
+                
+                const uploadResult = await uploadImage(dataURI, 'snapshop/products');
+                
+                if (uploadResult.success) {
+                    imageUrl = uploadResult.url;
+                    console.log('Image uploaded to Cloudinary:', imageUrl);
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Failed to upload image: ' + uploadResult.error
+                    });
+                }
+            } catch (uploadError) {
+                console.error('Image upload error:', uploadError);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Failed to upload image to Cloudinary'
+                });
+            }
+        }
+        
         const productData = {
-            name: req.body.name,
-            description: req.body.description,
-            category: req.body.category,
-            price: parseFloat(req.body.price),
-            higePrice: parseFloat(req.body.higePrice),
-            stock: parseInt(req.body.stock),
-            image: req.body.image,
-            sizes: JSON.parse(req.body.sizes || '[]'),
-            colors: JSON.parse(req.body.colors || '[]'),
-            gender: req.body.gender,
-            discount: parseFloat(req.body.discount)
+            name: name.trim(),
+            description: description.trim(),
+            category: category.trim(),
+            price: parsedPrice,
+            highPrice: parsedHighPrice,
+            stock: parsedStock,
+            image: imageUrl,
+            sizes: Array.isArray(sizes) ? sizes : JSON.parse(sizes || '[]'),
+            colors: Array.isArray(colors) ? colors : JSON.parse(colors || '[]'),
+            gender: gender.trim(),
+            discount: parsedDiscount
         };
         
         // Create new product
@@ -332,9 +442,86 @@ router.post('/api/products', async (req, res) => {
     }
 });
 
+// Delete product
+router.delete('/api/products/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        
+        // Find the product first to get the image URL
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
+        
+        // Delete the product from database
+        await Product.findByIdAndDelete(productId);
+        
+        // TODO: If you want to delete from Cloudinary too, uncomment this:
+        // if (product.image && product.image.includes('cloudinary.com')) {
+        //     const publicId = extractPublicIdFromUrl(product.image);
+        //     await deleteImage(publicId);
+        // }
+        
+        res.json({
+            success: true,
+            message: 'Product deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete product: ' + error.message
+        });
+    }
+});
+
 // ===== USERS API =====
 
 // ===== CONTACTS API =====
 // Note: Contact management APIs removed - not needed for simple dashboard display
+
+// Update contact status
+router.patch('/api/contacts/:contactId/status', async (req, res) => {
+    try {
+        const { contactId } = req.params;
+        const { status } = req.body;
+        
+        if (!status || !['pending', 'read', 'replied'].includes(status)) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid status. Must be pending, read, or replied'
+            });
+        }
+        
+        const contact = await Contact.findByIdAndUpdate(
+            contactId,
+            { status },
+            { new: true }
+        );
+        
+        if (!contact) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Contact not found' 
+            });
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Contact status updated successfully',
+            data: contact 
+        });
+    } catch (error) {
+        console.error('Error updating contact status:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to update contact status',
+            details: error.message 
+        });
+    }
+});
 
 module.exports = router;

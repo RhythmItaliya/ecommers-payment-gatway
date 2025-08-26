@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { BsEnvelope, BsPerson } from 'react-icons/bs';
+import { BsEnvelope, BsPerson, BsChatDots, BsPhone, BsGeoAlt } from 'react-icons/bs';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../redux/toastAction';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 const Contact = () => {
     const dispatch = useDispatch();
@@ -15,6 +17,15 @@ const Contact = () => {
     });
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+
+    useEffect(() => {
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-in-out',
+            once: true,
+            offset: 100,
+        });
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -44,7 +55,6 @@ const Contact = () => {
         }
 
         setLoading(true);
-        dispatch(showInfoToast('Sending your message...'));
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/contact/submit`, formData, {
@@ -71,79 +81,95 @@ const Contact = () => {
     };
 
     if (success) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-                <div className="max-w-md w-full bg-white rounded-lg shadow p-6 text-center">
-                    <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <BsEnvelope className="w-6 h-6 text-success" />
-                    </div>
-                    <h2 className="text-xl font-semibold text-neutral mb-2">Message Sent!</h2>
-                    <p className="text-gray-600 mb-4">Thank you for contacting us.</p>
-                    <Button
-                        onClick={() => {
-                            setSuccess(false);
-                            dispatch(showSuccessToast('Ready to send another message!'));
-                        }}
-                        variant="primary"
-                        size="sm"
-                    >
-                        Send Another
-                    </Button>
-                </div>
-            </div>
-        );
+        setSuccess(false);
+        setFormData({ name: '', email: '', message: '' });
+        return null;
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4">
-            <div className="max-w-md mx-auto">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-neutral mb-2">Contact Us</h1>
-                    <p className="text-gray-600">Send us a message and we'll get back to you.</p>
-                </div>
-
-                <div className="bg-white rounded-lg shadow p-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input
-                            label="Name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="Your name"
-                            icon={<BsPerson />}
-                            required
-                        />
-
-                        <Input
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Your email"
-                            icon={<BsEnvelope />}
-                            required
-                        />
-
-                        <div className="w-full">
-                            <label className="block text-sm font-medium text-neutral mb-2">
-                                Message <span className="text-danger ml-1">*</span>
-                            </label>
-                            <textarea
-                                name="message"
-                                value={formData.message}
-                                onChange={handleChange}
-                                placeholder="Your message..."
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent/50 focus:border-accent focus:border-2 hover:border-gray-400 resize-none"
-                                rows="4"
-                                required
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
+            <div className="max-w-6xl mx-auto">
+                {/* Main Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mt-20">
+                    <div className="order-2 lg:order-1" data-aos="fade-right" data-aos-delay="200">
+                        <div className="relative">
+                            <img
+                                src={require('../img/contact.jpg')}
+                                alt="Contact Us"
+                                className="w-full h-auto rounded-3xl shadow-xl object-cover"
+                                style={{ minHeight: '500px' }}
                             />
                         </div>
+                    </div>
 
-                        <Button type="submit" variant="primary" loading={loading} className="w-full">
-                            {loading ? 'Sending...' : 'Send Message'}
-                        </Button>
-                    </form>
+                    {/* Right Side - Contact Form */}
+                    <div className="order-1 lg:order-2" data-aos="fade-left" data-aos-delay="400">
+                        <div className="bg-white rounded-3xl shadow-xl p-8 lg:p-12">
+                            <div className="mb-8">
+                                <h3 className="text-2xl lg:text-3xl font-bold text-primary mb-3">Send us a Message</h3>
+                                <p className="text-neutral">
+                                    Fill out the form below and we'll get back to you within 24 hours.
+                                </p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <Input
+                                        label="Full Name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="Enter your full name"
+                                        icon={<BsPerson />}
+                                        required
+                                    />
+
+                                    <Input
+                                        label="Email Address"
+                                        name="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="Enter your email"
+                                        icon={<BsEnvelope />}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-primary mb-3">
+                                        Message <span className="text-danger ml-1">*</span>
+                                    </label>
+                                    <textarea
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        placeholder="Tell us how we can help you..."
+                                        className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary hover:border-gray-300 resize-none text-base"
+                                        rows="5"
+                                        required
+                                    />
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    size="xl"
+                                    loading={loading}
+                                    className="w-full py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                                >
+                                    {loading ? 'Sending Message...' : 'Send Message'}
+                                </Button>
+
+                                <p className="text-sm text-neutral text-center">
+                                    By submitting this form, you agree to our{' '}
+                                    <a href="/privacy" className="text-primary hover:underline font-medium">
+                                        Privacy Policy
+                                    </a>
+                                </p>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

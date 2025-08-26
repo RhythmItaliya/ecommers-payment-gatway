@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  higePrice: {
+  highPrice: {
     type: Number,
     required: true,
     min: 0

@@ -175,23 +175,8 @@ const RazorpayPayment = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <div className="text-center">
-                    <LoadingSpinner size="lg" variant="primary" text="Initializing payment..." />
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <ErrorState error={error} onRetry={() => setError(null)} />
-            </div>
-        );
-    }
+    if (loading) return <LoadingSpinner size="lg" variant="primary" text="Initializing payment..." />;
+    if (error) return <ErrorState error={error} onRetry={() => setError(null)} />;
 
     return (
         <div className="container mx-auto px-4 py-16">

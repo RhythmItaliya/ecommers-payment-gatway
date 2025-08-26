@@ -45,7 +45,7 @@ const getUserCart = async (req, res) => {
     console.log('Cart data being sent:', {
       items: transformedItems.map(item => ({
         _id: item._id,
-        productTitle: item.productId?.title,
+        productTitle: item.productId?.name,
         quantity: item.quantity,
         storedPrice: item.price,
         productPrice: item.productId?.price
@@ -95,7 +95,7 @@ const addToCart = async (req, res) => {
     
     console.log('Adding product to cart:', {
       productId: product._id,
-      productTitle: product.title,
+      productTitle: product.name,
       productPrice: product.price,
       quantity
     });
@@ -147,7 +147,7 @@ const addToCart = async (req, res) => {
     console.log('Final cart data:', {
       items: transformedItems.map(item => ({
         _id: item._id,
-        productTitle: item.productId?.title,
+        productTitle: item.productId?.name,
         quantity: item.quantity,
         price: item.price
       })),
@@ -212,10 +212,17 @@ const updateCartItemQuantity = async (req, res) => {
       });
     }
     
-    // Find and update the item
-    const item = cart.items.find(
+    // Find and update the item (by product _id; fallback to cart item _id if needed)
+    let item = cart.items.find(
       item => item.productId.toString() === product._id.toString()
     );
+    
+    if (!item) {
+      // Fallback: allow passing cart item _id in URL
+      if (mongoose.Types.ObjectId.isValid(productId)) {
+        item = cart.items.id(productId);
+      }
+    }
     
     if (!item) {
       return res.status(404).json({
@@ -291,10 +298,16 @@ const removeFromCart = async (req, res) => {
       });
     }
     
-    // Remove product from cart
+    // Remove product from cart (by product _id; fallback to cart item _id)
+    const beforeCount = cart.items.length;
     cart.items = cart.items.filter(
       item => item.productId.toString() !== product._id.toString()
     );
+    
+    // If nothing was removed, try removing by cart item _id equal to param
+    if (cart.items.length === beforeCount && mongoose.Types.ObjectId.isValid(productId)) {
+      cart.items = cart.items.filter(item => item._id.toString() !== productId.toString());
+    }
     
     await cart.save();
     

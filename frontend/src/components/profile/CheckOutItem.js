@@ -9,8 +9,8 @@ const CheckOutItem = ({ item }) => {
     const product = item.productId || item.product;
     if (!product) return null;
 
-    const productId = product.id || product._id;
-    const productName = product.title || product.name || 'Unknown Product';
+    const productId = product._id || product.id;
+    const productName = product.name || product.title || 'Unknown Product';
     const productImage = product.image || product.pictures?.[0] || '/placeholder-product.jpg';
     const productPrice = item.price || product.price || 0;
     const quantity = item.quantity || 1;

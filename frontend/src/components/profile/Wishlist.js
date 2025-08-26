@@ -20,23 +20,8 @@ const Wishlist = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <div className="text-center">
-                    <LoadingSpinner size="lg" variant="primary" text="Loading wishlist..." />
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <ErrorState error={error} onRetry={() => dispatch(fetchWishlist())} />
-            </div>
-        );
-    }
+    if (loading) return <LoadingSpinner size="lg" variant="primary" text="Loading wishlist..." />;
+    if (error) return <ErrorState error={error} onRetry={() => dispatch(fetchWishlist())} />;
 
     return (
         <div className="container mx-auto px-4 py-16">
@@ -59,15 +44,14 @@ const Wishlist = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {wishlist &&
-                        wishlist.map((product) => (
-                            <div
-                                key={product._id || product.id}
-                                className="transform hover:scale-105 transition-transform duration-300"
-                            >
-                                <ProductCard product={product} />
-                            </div>
-                        ))}
+                    {wishlist.map((product) => (
+                        <div
+                            key={product._id || product.id}
+                            className="transform hover:scale-105 transition-transform duration-300"
+                        >
+                            <ProductCard product={product} />
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

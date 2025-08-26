@@ -124,7 +124,6 @@ const UserProfile = () => {
                 address: formData.address,
             };
 
-            console.log('Sending update data:', updateData);
             const result = await dispatch(updateUserProfile(updateData));
 
             if (updateUserProfile.fulfilled.match(result)) {
@@ -258,9 +257,7 @@ const UserProfile = () => {
         }
     };
 
-    if (!isLoggedIn) {
-        return null;
-    }
+    if (!isLoggedIn) return null;
 
     return (
         <div className="min-h-screen bg-gray-50 pt-20">

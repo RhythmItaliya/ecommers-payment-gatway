@@ -14,10 +14,10 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isInWishlist, setIsInWishlist] = useState(false);
     const dispatch = useDispatch();
     const { id } = useParams();
 
-    const { items: wishlistItems } = useSelector((state) => state.wishlist);
     const { isLoggedIn } = useSelector((state) => state.auth);
 
     useEffect(() => {
@@ -48,39 +48,41 @@ const ProductDetails = () => {
         fetchProduct();
     }, [id]);
 
-    if (loading) {
+    useEffect(() => {
+        const checkWishlistStatus = async () => {
+            if (!isLoggedIn || !product) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/wishlist/check/${product._id || product.id}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+
+                if (response.data.success) {
+                    setIsInWishlist(response.data.isInWishlist);
+                }
+            } catch (error) {
+                // Silent fail for wishlist check
+            }
+        };
+
+        checkWishlistStatus();
+    }, [isLoggedIn, product]);
+
+    if (loading) return <LoadingSpinner size="xl" variant="primary" text="Loading product..." />;
+    if (error) return <ErrorState error={error} onRetry={() => window.location.reload()} />;
+    if (!product)
         return (
-            <section className="min-h-screen flex justify-center items-center bg-gray-50">
-                <LoadingSpinner size="xl" variant="primary" text="Loading product..." />
-            </section>
+            <ErrorState
+                error="The product you're looking for doesn't exist."
+                onRetry={() => window.location.reload()}
+            />
         );
-    }
 
-    if (error) {
-        return (
-            <section className="min-h-screen flex justify-center items-center bg-gray-50">
-                <ErrorState error={error} onRetry={() => window.location.reload()} />
-            </section>
-        );
-    }
-
-    if (!product) {
-        return (
-            <section className="min-h-screen flex justify-center items-center bg-gray-50">
-                <ErrorState
-                    error="The product you're looking for doesn't exist."
-                    onRetry={() => window.location.reload()}
-                />
-            </section>
-        );
-    }
-
-    const { name, price, higePrice, description, image, discount, stock, category, sizes, colors, gender } = product;
-
-    const isInWishlist = wishlistItems.some((item) => {
-        const itemProductId = item.productId?.id || item.productId;
-        return itemProductId === product.id || itemProductId === product._id;
-    });
+    const { name, price, highPrice, description, image, discount, stock, category, sizes, colors, gender } = product;
 
     const handleAddToCart = () => {
         if (!isLoggedIn) {
@@ -88,34 +90,33 @@ const ProductDetails = () => {
             return;
         }
 
-        const productId = product.id || product._id;
+        const productId = product._id || product.id;
         if (productId) {
             dispatch(addToCart({ productId, quantity: 1 }));
             dispatch(showSuccessToast('Product added to cart successfully!'));
         }
     };
 
-    const handleWishlistToggle = () => {
+    const handleWishlistToggle = async () => {
         if (!isLoggedIn) {
             dispatch(showWarningToast('Please login to manage wishlist'));
             return;
         }
 
-        if (isInWishlist) {
-            const wishlistItem = wishlistItems.find((item) => {
-                const itemProductId = item.productId?.id || item.productId;
-                return itemProductId === product.id || itemProductId === product._id;
-            });
+        const productId = product._id || product.id;
+        const action = isInWishlist ? removeFromWishlist : addToWishlist;
+        const successMessage = isInWishlist
+            ? 'Product removed from wishlist'
+            : 'Product added to wishlist successfully!';
 
-            if (wishlistItem) {
-                const removeId = wishlistItem.productId?.id || wishlistItem.productId;
-                dispatch(removeFromWishlist(removeId));
-                dispatch(showSuccessToast('Product removed from wishlist'));
+        try {
+            const result = await dispatch(action(productId));
+            if (action.fulfilled.match(result)) {
+                setIsInWishlist(!isInWishlist);
+                dispatch(showSuccessToast(successMessage));
             }
-        } else {
-            const productId = product.id || product._id;
-            dispatch(addToWishlist(productId));
-            dispatch(showSuccessToast('Product added to wishlist successfully!'));
+        } catch (error) {
+            dispatch(showWarningToast(`Failed to ${isInWishlist ? 'remove from' : 'add to'} wishlist`));
         }
     };
 
@@ -199,7 +200,7 @@ const ProductDetails = () => {
                                                 {formatINRPrice(price)}
                                             </span>
                                             <span className="text-2xl text-gray-400 line-through">
-                                                {formatINRPrice(higePrice)}
+                                                {formatINRPrice(highPrice)}
                                             </span>
                                             <span className="bg-red-100 text-red-600 text-sm font-semibold px-3 py-1 rounded-full">
                                                 {discount}% OFF
@@ -211,22 +212,38 @@ const ProductDetails = () => {
                                 </div>
 
                                 <div className="mb-6">
-                                    <span
-                                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                                    {(() => {
+                                        const stockStatus =
                                             stock > 10
-                                                ? 'bg-green-100 text-green-800'
+                                                ? {
+                                                      bg: 'bg-green-100',
+                                                      text: 'text-green-800',
+                                                      dot: 'bg-green-500',
+                                                      label: 'In Stock',
+                                                  }
                                                 : stock > 0
-                                                  ? 'bg-yellow-100 text-yellow-800'
-                                                  : 'bg-red-100 text-red-800'
-                                        }`}
-                                    >
-                                        <span
-                                            className={`w-2 h-2 rounded-full mr-2 ${
-                                                stock > 10 ? 'bg-green-500' : stock > 0 ? 'bg-yellow-500' : 'bg-red-500'
-                                            }`}
-                                        ></span>
-                                        {stock > 10 ? 'In Stock' : stock > 0 ? `Only ${stock} left` : 'Out of Stock'}
-                                    </span>
+                                                  ? {
+                                                        bg: 'bg-yellow-100',
+                                                        text: 'text-yellow-800',
+                                                        dot: 'bg-yellow-500',
+                                                        label: `Only ${stock} left`,
+                                                    }
+                                                  : {
+                                                        bg: 'bg-red-100',
+                                                        text: 'text-red-800',
+                                                        dot: 'bg-red-500',
+                                                        label: 'Out of Stock',
+                                                    };
+
+                                        return (
+                                            <span
+                                                className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${stockStatus.bg} ${stockStatus.text}`}
+                                            >
+                                                <span className={`w-2 h-2 rounded-full mr-2 ${stockStatus.dot}`}></span>
+                                                {stockStatus.label}
+                                            </span>
+                                        );
+                                    })()}
                                 </div>
 
                                 <div className="mb-8">
@@ -241,7 +258,7 @@ const ProductDetails = () => {
                                         <span className="text-sm font-medium text-gray-900 capitalize">{gender}</span>
                                     </div>
 
-                                    {sizes && sizes.length > 0 && (
+                                    {sizes?.length > 0 && (
                                         <div className="flex items-center gap-4">
                                             <span className="text-sm font-medium text-gray-500">Available Sizes:</span>
                                             <div className="flex gap-2">
@@ -257,7 +274,7 @@ const ProductDetails = () => {
                                         </div>
                                     )}
 
-                                    {colors && colors.length > 0 && (
+                                    {colors?.length > 0 && (
                                         <div className="flex items-center gap-4">
                                             <span className="text-sm font-medium text-gray-500">Available Colors:</span>
                                             <div className="flex gap-2">

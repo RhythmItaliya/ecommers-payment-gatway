@@ -16,8 +16,15 @@ const getUserWishlist = async (req, res) => {
       await wishlist.save();
     }
     
+    // Prune any wishlist items whose referenced product was deleted
+    const validProducts = wishlist.products.filter(item => item.productId);
+    if (validProducts.length !== wishlist.products.length) {
+      wishlist.products = validProducts;
+      await wishlist.save();
+    }
+
     // Transform the data to match frontend expectations
-    const transformedProducts = wishlist.products.map(item => ({
+    const transformedProducts = validProducts.map(item => ({
       ...item.productId.toObject(),
       wishlistItemId: item._id,
       addedAt: item.addedAt
@@ -93,12 +100,14 @@ const addToWishlist = async (req, res) => {
     // Populate product details
     await wishlist.populate('products.productId');
     
-    // Transform the data to match frontend expectations
-    const transformedProducts = wishlist.products.map(item => ({
-      ...item.productId.toObject(),
-      wishlistItemId: item._id,
-      addedAt: item.addedAt
-    }));
+    // Transform the data to match frontend expectations (guard against missing refs)
+    const transformedProducts = wishlist.products
+      .filter(item => item.productId)
+      .map(item => ({
+        ...item.productId.toObject(),
+        wishlistItemId: item._id,
+        addedAt: item.addedAt
+      }));
     
     res.json({
       success: true,
@@ -164,12 +173,14 @@ const removeFromWishlist = async (req, res) => {
     // Populate product details
     await wishlist.populate('products.productId');
     
-    // Transform the data to match frontend expectations
-    const transformedProducts = wishlist.products.map(item => ({
-      ...item.productId.toObject(),
-      wishlistItemId: item._id,
-      addedAt: item.addedAt
-    }));
+    // Transform the data to match frontend expectations (guard against missing refs)
+    const transformedProducts = wishlist.products
+      .filter(item => item.productId)
+      .map(item => ({
+        ...item.productId.toObject(),
+        wishlistItemId: item._id,
+        addedAt: item.addedAt
+      }));
     
     res.json({
       success: true,

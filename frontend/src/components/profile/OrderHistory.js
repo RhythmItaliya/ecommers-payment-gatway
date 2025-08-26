@@ -124,23 +124,8 @@ const OrderHistory = () => {
         });
     };
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <div className="text-center">
-                    <LoadingSpinner size="lg" variant="primary" text="Loading orders..." />
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-16">
-                <ErrorState error={error} onRetry={fetchOrders} />
-            </div>
-        );
-    }
+    if (loading) return <LoadingSpinner size="lg" variant="primary" text="Loading orders..." />;
+    if (error) return <ErrorState error={error} onRetry={fetchOrders} />;
 
     return (
         <div className="container mx-auto px-4 py-16">
@@ -217,12 +202,12 @@ const OrderHistory = () => {
                                                         item.productId?.pictures?.[0] ||
                                                         '/placeholder-product.jpg'
                                                     }
-                                                    alt={item.productId?.title || 'Product'}
+                                                    alt={item.productId?.name || 'Product'}
                                                     className="w-12 h-12 object-cover rounded-md"
                                                 />
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-medium text-primary truncate">
-                                                        {item.productId?.title || 'Unknown Product'}
+                                                        {item.productId?.name || 'Unknown Product'}
                                                     </p>
                                                     <p className="text-sm text-neutral">
                                                         Qty: {item.quantity} × {formatINRPrice(item.price)}
@@ -335,12 +320,12 @@ const OrderHistory = () => {
                                                     item.productId?.pictures?.[0] ||
                                                     '/placeholder-product.jpg'
                                                 }
-                                                alt={item.productId?.title || 'Product'}
+                                                alt={item.productId?.name || 'Product'}
                                                 className="w-16 h-16 object-cover rounded-md"
                                             />
                                             <div className="flex-1">
                                                 <p className="font-medium text-primary">
-                                                    {item.productId?.title || 'Unknown Product'}
+                                                    {item.productId?.name || 'Unknown Product'}
                                                 </p>
                                                 <p className="text-sm text-neutral">
                                                     Qty: {item.quantity} × {formatINRPrice(item.price)}

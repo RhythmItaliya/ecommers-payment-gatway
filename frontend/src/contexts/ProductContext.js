@@ -28,7 +28,7 @@ const ProductProvider = ({ children }) => {
                     name: product.name,
                     title: product.name,
                     price: product.price,
-                    higePrice: product.higePrice,
+                    highPrice: product.highPrice,
                     description: product.description,
                     category: product.category,
                     image:

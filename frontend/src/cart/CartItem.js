@@ -15,10 +15,10 @@ const CartItem = ({ item }) => {
         return null;
     }
 
-    const { _id, id, image, title } = product;
+    const { _id, id, image, name: title } = product;
     const { quantity, price } = item;
 
-    const productId = id || _id;
+    const productId = _id || id;
 
     const updateQuantity = async (newQty) => {
         if (newQty > 0) {

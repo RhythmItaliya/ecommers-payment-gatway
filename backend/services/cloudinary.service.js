@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 // Upload image to Cloudinary
-const uploadImage = async (file, folder = 'snakshop') => {
+const uploadImage = async (file, folder = 'snapshop') => {
   try {
     const result = await cloudinary.uploader.upload(file, {
       folder: folder,
@@ -57,7 +57,7 @@ const deleteImage = async (publicId) => {
 };
 
 // Update image in Cloudinary
-const updateImage = async (publicId, newFile, folder = 'snakshop') => {
+const updateImage = async (publicId, newFile, folder = 'snapshop') => {
   try {
     // First delete the old image
     await deleteImage(publicId);

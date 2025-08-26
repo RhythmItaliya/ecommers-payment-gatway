@@ -18,7 +18,7 @@ const config = {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'ds9ufpxom',
     apiKey: process.env.CLOUDINARY_API_KEY || '819183193299387',
     apiSecret: process.env.CLOUDINARY_API_SECRET || 'OIldsEhVgMuBOJc0lq45HHR7kRU',
-    folder: process.env.CLOUDINARY_FOLDER || 'snakshop'
+    folder: process.env.CLOUDINARY_FOLDER || 'snapshop'
   },
   
   // Frontend URL (for CORS)
