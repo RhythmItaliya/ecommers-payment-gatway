@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom';
 import { BsFacebook, BsTwitter, BsInstagram, BsLinkedin, BsEnvelope, BsTelephone, BsGeoAlt } from 'react-icons/bs';
 
 const Footer = () => {
-    const quickLinks = ['Home', 'Men', 'Women', 'New', 'Sale'];
-    const customerService = ['Help', 'Size Guide', 'Shipping', 'Returns', 'Contact'];
-    const legal = ['About', 'Privacy', 'Terms', 'Cookies'];
+    const quickLinks = ['Home','Men', 'New', 'Women', 'Sale', 'Contact Us','About Us'];
 
     return (
         <footer className="bg-primary text-white relative overflow-hidden">
@@ -15,8 +13,8 @@ const Footer = () => {
 
             <div className="relative z-10">
                 <div className="container mx-auto px-4 py-16">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-12">
-                        <div className="lg:col-span-2 xl:col-span-1 space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <div className="space-y-6">
                             <div className="flex items-center space-x-3">
                                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
                                     <span className="text-accent font-bold text-xl">S</span>
@@ -37,38 +35,19 @@ const Footer = () => {
                             <h3 className="text-lg font-semibold text-white border-b-2 border-secondary pb-2 inline-block">
                                 Quick Links
                             </h3>
-                            <ul className="space-y-3">
+                            <div className="grid grid-cols-2 gap-4">
                                 {quickLinks.map((link) => (
-                                    <li key={link}>
+                                    <div key={link} className="space-y-3">
                                         <Link
-                                            to="/"
+                                            to={link === 'About Us' ? '/about' : link === 'Contact Us' ? '/contact' : link === 'Men' ? '/products?category=men' : link === 'Women' ? '/products?category=women' : link === 'New' ? '/products?category=new' : link === 'Sale' ? '/products?category=sale' : '/'}
                                             className="text-gray-300 hover:text-secondary transition-all duration-300 text-base flex items-center group"
                                         >
                                             <span className="w-1 h-1 bg-secondary rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                                             {link}
                                         </Link>
-                                    </li>
+                                    </div>
                                 ))}
-                            </ul>
-                        </div>
-
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-white border-b-2 border-secondary pb-2 inline-block">
-                                Customer Service
-                            </h3>
-                            <ul className="space-y-3">
-                                {customerService.map((service) => (
-                                    <li key={service}>
-                                        <Link
-                                            to={service === 'Contact' ? '/contact' : '/'}
-                                            className="text-gray-300 hover:text-secondary transition-all duration-300 text-base flex items-center group"
-                                        >
-                                            <span className="w-1 h-1 bg-secondary rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
-                                            {service}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
+                            </div>
                         </div>
 
                         <div className="space-y-6">
@@ -134,25 +113,12 @@ const Footer = () => {
                     <div className="container mx-auto px-4 py-6">
                         <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                             <div className="flex items-center space-x-2">
-                                <div className="w-6 h-6 bg-secondary rounded-full"></div>
-                                <p className="text-gray-400 text-sm">&copy; 2024 SnapShop. All rights reserved.</p>
-                            </div>
-
-                            <div className="flex items-center space-x-6 text-sm">
-                                {legal.map((item) => (
-                                    <Link
-                                        key={item}
-                                        to="/"
-                                        className="text-gray-400 hover:text-secondary transition-colors duration-300"
-                                    >
-                                        {item}
-                                    </Link>
-                                ))}
+                                <p className="text-gray-400 text-sm">2025 SnapShop. All rights reserved.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>  
         </footer>
     );
 };

@@ -41,11 +41,13 @@ const Header = () => {
             label: CATEGORY_LABELS[PRODUCT_CATEGORIES.SALE],
             path: `/products?category=${PRODUCT_CATEGORIES.SALE}`,
         },
+        { key: 'about', label: 'About Us', path: '/about' },
         { key: 'contact', label: 'Contact Us', path: '/contact' },
     ];
 
     const isActive = (item) => {
         if (item.key === 'home' && location.pathname === '/') return true;
+        if (item.key === 'about' && location.pathname === '/about') return true;
         if (item.key === 'contact' && location.pathname === '/contact') return true;
         if (location.pathname === '/products') {
             const urlParams = new URLSearchParams(location.search);
