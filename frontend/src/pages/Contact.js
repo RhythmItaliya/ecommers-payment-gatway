@@ -3,8 +3,8 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { BsEnvelope, BsPerson, BsChatDots, BsPhone, BsGeoAlt } from 'react-icons/bs';
-import { showSuccessToast, showErrorToast, showInfoToast } from '../redux/toastAction';
+import { BsEnvelope, BsPerson } from 'react-icons/bs';
+import { showSuccessToast, showErrorToast } from '../redux/toastAction';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
