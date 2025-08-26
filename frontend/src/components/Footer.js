@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { BsFacebook, BsTwitter, BsInstagram, BsLinkedin, BsEnvelope, BsTelephone, BsGeoAlt } from 'react-icons/bs';
 
 const Footer = () => {
-    const quickLinks = ['Home','Men', 'New', 'Women', 'Sale', 'Contact Us','About Us'];
+    const quickLinks = ['Home', 'Men', 'New', 'Women', 'Sale', 'Contact Us', 'About Us'];
 
     return (
         <footer className="bg-primary text-white relative overflow-hidden">
@@ -39,7 +39,21 @@ const Footer = () => {
                                 {quickLinks.map((link) => (
                                     <div key={link} className="space-y-3">
                                         <Link
-                                            to={link === 'About Us' ? '/about' : link === 'Contact Us' ? '/contact' : link === 'Men' ? '/products?category=men' : link === 'Women' ? '/products?category=women' : link === 'New' ? '/products?category=new' : link === 'Sale' ? '/products?category=sale' : '/'}
+                                            to={
+                                                link === 'About Us'
+                                                    ? '/about'
+                                                    : link === 'Contact Us'
+                                                      ? '/contact'
+                                                      : link === 'Men'
+                                                        ? '/products?category=men'
+                                                        : link === 'Women'
+                                                          ? '/products?category=women'
+                                                          : link === 'New'
+                                                            ? '/products?category=new'
+                                                            : link === 'Sale'
+                                                              ? '/products?category=sale'
+                                                              : '/'
+                                            }
                                             className="text-gray-300 hover:text-secondary transition-all duration-300 text-base flex items-center group"
                                         >
                                             <span className="w-1 h-1 bg-secondary rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
@@ -118,7 +132,7 @@ const Footer = () => {
                         </div>
                     </div>
                 </div>
-            </div>  
+            </div>
         </footer>
     );
 };
