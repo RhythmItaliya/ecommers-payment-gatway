@@ -1,5 +1,3 @@
-# Copy this file to .env and update the values as needed
-
 # Server Configuration
 PORT=5000
 NODE_ENV=development
@@ -21,9 +19,8 @@ CLOUDINARY_FOLDER=snakshop
 FRONTEND_URL=http://localhost:3000
 
 # Payment Gateway Keys
-STRIPE_KEY=your_stripe_key_here
-RAZORPAY_KEY_ID=your_razorpay_key_id_here
-RAZORPAY_KEY_SECRET=your_razorpay_secret_here
+RAZORPAY_KEY_ID=rzp_test_t8qeVD7fsffjfV
+RAZORPAY_KEY_SECRET=wynTnpWG7jyaQq4fsZwbcIi9
 
 # Admin Configuration
 ADMIN_USERNAME=admin
