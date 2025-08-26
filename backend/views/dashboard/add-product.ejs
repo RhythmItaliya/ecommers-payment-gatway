@@ -332,9 +332,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const gender = document.getElementById('gender').value;
         const discount = document.getElementById('discount').value;
         
-        // Debug: Log the values
-        console.log('Form values:', { name, category, description, price, highPrice, stock, gender, discount });
-        
         // Validate required fields
         if (!name || !category || !description || !gender) {
             showNotification('Please fill in all required fields: Name, Category, Description, and Gender', 'error');
@@ -369,24 +366,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const imageFile = imageInput.files[0];
         if (imageFile) {
             formData.append('image', imageFile);
-            console.log('Image file added:', imageFile.name);
         } else {
-            console.log('No image file selected');
             showNotification('Please select a product image', 'error');
             resetSubmitButton();
             return;
         }
         
         try {
-            // Debug: Log the FormData contents
-            console.log('FormData contents:');
-            for (let [key, value] of formData.entries()) {
-                console.log(key + ': ' + value);
-            }
-            
             const apiUrl = '/api/products';
-            console.log('Sending request to:', apiUrl);
-            
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: formData

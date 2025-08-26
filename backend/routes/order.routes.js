@@ -18,9 +18,6 @@ router.get('/', async (req, res) => {
             .populate('items.productId', 'name price')
             .sort({ createdAt: -1 });
         
-        // Debug logging
-        console.log('Orders API - Total orders found:', orders.length);
-        
         res.json({
             success: true,
             data: orders

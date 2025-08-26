@@ -42,18 +42,6 @@ const getUserCart = async (req, res) => {
       };
     });
     
-    console.log('Cart data being sent:', {
-      items: transformedItems.map(item => ({
-        _id: item._id,
-        productTitle: item.productId?.name,
-        quantity: item.quantity,
-        storedPrice: item.price,
-        productPrice: item.productId?.price
-      })),
-      totalQuantity: cart.totalQuantity,
-      totalAmount: cart.totalAmount
-    });
-    
     res.json({
       success: true,
       data: transformedItems,
@@ -93,13 +81,6 @@ const addToCart = async (req, res) => {
       });
     }
     
-    console.log('Adding product to cart:', {
-      productId: product._id,
-      productTitle: product.name,
-      productPrice: product.price,
-      quantity
-    });
-    
     let cart = await Cart.findOne({ userId });
     
     if (!cart) {
@@ -115,7 +96,6 @@ const addToCart = async (req, res) => {
     if (existingItem) {
       // Update quantity if product already exists
       existingItem.quantity += quantity;
-      console.log('Updated existing item quantity:', existingItem.quantity);
     } else {
       // Add new product to cart
       const newItem = {
@@ -124,7 +104,6 @@ const addToCart = async (req, res) => {
         price: product.price
       };
       cart.items.push(newItem);
-      console.log('Added new item to cart:', newItem);
     }
     
     await cart.save();
@@ -142,17 +121,6 @@ const addToCart = async (req, res) => {
         price: item.price, // Use the stored price from cart item
         addedAt: item.addedAt
       };
-    });
-    
-    console.log('Final cart data:', {
-      items: transformedItems.map(item => ({
-        _id: item._id,
-        productTitle: item.productId?.name,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      totalQuantity: cart.totalQuantity,
-      totalAmount: cart.totalAmount
     });
     
     res.json({

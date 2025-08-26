@@ -195,8 +195,6 @@ router.put('/api/users/:userId/status', async (req, res) => {
         const { userId } = req.params;
         const { isActive } = req.body;
         
-        console.log('Updating user status:', { userId, isActive });
-        
         if (userId === undefined || isActive === undefined) {
             return res.status(400).json({ 
                 error: 'Missing required fields',
@@ -212,11 +210,9 @@ router.put('/api/users/:userId/status', async (req, res) => {
         );
         
         if (!user) {
-            console.log('User not found:', userId);
             return res.status(404).json({ error: 'User not found' });
         }
         
-        console.log('User status updated successfully:', user._id, '->', isActive);
         res.json({ success: true, user });
     } catch (error) {
         console.error('Error updating user status:', error);
@@ -326,10 +322,6 @@ router.get('/api/users', async (req, res) => {
 // Create new product
 router.post('/api/products', uploadSingle, handleUploadError, async (req, res) => {
     try {
-        // Debug: Log what we received
-        console.log('Request body:', req.body);
-        console.log('Request file:', req.file);
-        
         // Validate required fields
         const { name, description, category, price, highPrice, stock, sizes, colors, gender, discount } = req.body;
         
@@ -394,7 +386,6 @@ router.post('/api/products', uploadSingle, handleUploadError, async (req, res) =
                 
                 if (uploadResult.success) {
                     imageUrl = uploadResult.url;
-                    console.log('Image uploaded to Cloudinary:', imageUrl);
                 } else {
                     return res.status(400).json({
                         success: false,
